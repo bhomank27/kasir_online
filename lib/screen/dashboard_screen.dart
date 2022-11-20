@@ -3,6 +3,7 @@ import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 import '../widget/drawer_main.dart';
 
@@ -16,6 +17,17 @@ class DashboarScreen extends StatefulWidget {
 class _DashboarScreenState extends State<DashboarScreen> {
   bool isVisible = false;
   DateTime? today;
+
+  void _onDaySelected(DateTime day, DateTime focusedDay) {
+    setState(() {
+      today = day;
+    });
+  }
+
+  dateFormat(DateTime date) {
+    return DateFormat("dd-MM-yyyy").format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -35,9 +47,9 @@ class _DashboarScreenState extends State<DashboarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                navbarMain(size: size, style: style),
+                NavbarMain(size: size, style: style),
                 const subNavbar(),
-                contentCalendar(context)
+                contentMain(context),
               ],
             ),
           ),
@@ -46,7 +58,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
     );
   }
 
-  Row contentCalendar(BuildContext context) {
+  Row contentMain(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -66,19 +78,14 @@ class _DashboarScreenState extends State<DashboarScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   child: TableCalendar(
-                    onDaySelected: ((selectedDay, focusedDay) {
-                      print(today);
-                      // print(selectedDay);
-                      print(focusedDay);
-                      setState(() {
-                        today = focusedDay;
-                        isVisible = false;
-                      });
+                    onDaySelected: _onDaySelected,
+                    selectedDayPredicate: ((day) {
+                      isVisible = false;
+                      return isSameDay(day, today);
                     }),
-                    onHeaderTapped: ((focusedDay) {
-                      print(focusedDay);
+                    onHeaderTapped: ((_) {
                       setState(() {
-                        today = focusedDay;
+                        today = DateTime.now();
                       });
                     }),
                     locale: "id",
@@ -111,7 +118,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Hasil Penjualan Hari ini",
+                    Text("Hasil Penjualan ${dateFormat(today!)}",
                         style: TextStyle(fontSize: 20)),
                     IconButton(
                         onPressed: () {
@@ -148,8 +155,8 @@ class _DashboarScreenState extends State<DashboarScreen> {
   }
 }
 
-class navbarMain extends StatelessWidget {
-  const navbarMain({
+class NavbarMain extends StatelessWidget {
+  const NavbarMain({
     Key? key,
     required this.size,
     required this.style,
