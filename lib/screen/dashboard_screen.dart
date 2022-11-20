@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/screen/transaksi_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/calendar.dart';
@@ -78,6 +79,11 @@ class _DashboarScreenState extends State<DashboarScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   child: TableCalendar(
+                    calendarStyle: const CalendarStyle(
+                        todayDecoration: BoxDecoration(
+                            color: Colors.red, shape: BoxShape.circle),
+                        selectedDecoration: BoxDecoration(
+                            color: Colors.orange, shape: BoxShape.circle)),
                     onDaySelected: _onDaySelected,
                     selectedDayPredicate: ((day) {
                       isVisible = true;
@@ -177,15 +183,19 @@ class NavbarMain extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(7.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                "assets/icon/transaksi.png",
-                height: 50,
-              ),
-              Text("Transaksi Baru", style: style.headline2)
-            ],
+          child: GestureDetector(
+            onTap: (() => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const TransaksiScreen()))),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  "assets/icon/transaksi.png",
+                  height: 50,
+                ),
+                Text("Transaksi Baru", style: style.headline2)
+              ],
+            ),
           ),
         ),
       ),
@@ -217,11 +227,11 @@ class subNavbar extends StatelessWidget {
         ),
         ButtonDashboard(
           title: "Retur Penjualan",
-          icon: "retur_penjualan.png",
+          icon: "produk.png",
         ),
         ButtonDashboard(
           title: "Retur Penjualan",
-          icon: "retur_penjualan.png",
+          icon: "transaksi.png",
         ),
       ],
     );

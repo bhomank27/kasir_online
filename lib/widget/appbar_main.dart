@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 PreferredSizeWidget? appbarWidget({String? title}) {
   return AppBar(
+    toolbarHeight: 70,
     title: Text(title ?? ""),
     elevation: 0,
     actions: [
