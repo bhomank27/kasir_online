@@ -80,7 +80,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
                   child: TableCalendar(
                     onDaySelected: _onDaySelected,
                     selectedDayPredicate: ((day) {
-                      isVisible = false;
+                      isVisible = true;
                       return isSameDay(day, today);
                     }),
                     onHeaderTapped: ((_) {
@@ -107,7 +107,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
           ),
         ),
         Visibility(
-          visible: !isVisible,
+          visible: isVisible,
           child: Expanded(
               child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -118,12 +118,13 @@ class _DashboarScreenState extends State<DashboarScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Hasil Penjualan ${dateFormat(today!)}",
+                    Text(
+                        "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
                         style: TextStyle(fontSize: 20)),
                     IconButton(
                         onPressed: () {
                           setState(() {
-                            isVisible = true;
+                            isVisible = false;
                           });
                         },
                         icon: const Icon(Icons.close)),

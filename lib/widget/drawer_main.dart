@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/screen/profile_screen.dart';
 
 import '../theme/theme.dart';
 
@@ -24,17 +25,24 @@ class DrawerMain extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Admin Garut Shop",
+                      const Text("Admin\nGarut Shop",
                           style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.bold)),
                       ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ProfileScreen()));
+                          },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: const [
                               Icon(Icons.shopping_bag),
-                              Text("Shop")
+                              Text("Toko")
                             ],
                           ))
                     ],
