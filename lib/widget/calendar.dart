@@ -11,7 +11,7 @@ class CalendarWidget extends StatefulWidget {
 class _CalendarWidgetState extends State<CalendarWidget> {
   DateTime today = DateTime.now();
 
-  void _onDaySelected(day, focusedDay) {
+  _onDaySelected(day, focusedDay) {
     setState(() {
       today = day;
     });
@@ -19,21 +19,29 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return TableCalendar(
-      locale: "id",
-      headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          titleTextStyle: TextStyle(
-              color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold)),
-      availableGestures: AvailableGestures.all,
-      focusedDay: today,
-      firstDay: DateTime.utc(2010, 01, 01),
-      lastDay: DateTime.utc(2030, 12, 30),
-      selectedDayPredicate: ((day) {
-        print(day);
-        return isSameDay(day, today);
-      }),
+    return SizedBox(
+      height: MediaQuery.of(context).size.height / 2,
+      child: TableCalendar(
+        onHeaderTapped: ((focusedDay) => setState(() {
+              print(focusedDay);
+              today = focusedDay;
+            })),
+        locale: "id",
+        headerStyle: const HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+            titleTextStyle: TextStyle(
+                color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold)),
+        availableGestures: AvailableGestures.all,
+        focusedDay: today,
+        firstDay: DateTime.utc(2010, 01, 01),
+        lastDay: DateTime.utc(2030, 12, 30),
+        // selectedDayPredicate: ((day) {
+        //   print(day);
+        //   // _onDaySelected(day, today);
+        //   return isSameDay(day, today);
+        // }),
+      ),
     );
   }
 }
