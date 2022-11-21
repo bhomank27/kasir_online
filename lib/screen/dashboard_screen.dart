@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/screen/retur_penjualan_screen.dart';
 import 'package:kasir_online/screen/transaksi_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
@@ -36,14 +37,14 @@ class _DashboarScreenState extends State<DashboarScreen> {
     return Scaffold(
       appBar: appbarWidget(),
       drawer: const DrawerMain(),
-      body: Stack(children: [
-        Container(
-          color: Colors.red,
-          height: size.height / 5,
-          width: size.width,
-        ),
-        SingleChildScrollView(
-          child: Padding(
+      body: SingleChildScrollView(
+        child: Stack(children: [
+          Container(
+            color: Colors.red,
+            height: size.height / 5,
+            width: size.width,
+          ),
+          Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,9 +54,9 @@ class _DashboarScreenState extends State<DashboarScreen> {
                 contentMain(context),
               ],
             ),
-          ),
-        )
-      ]),
+          )
+        ]),
+      ),
     );
   }
 
@@ -212,10 +213,14 @@ class subNavbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
+      children: [
         ButtonDashboard(
           title: "Retur Penjualan",
           icon: "retur_penjualan.png",
+          ontap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ReturPenjualanScreen())),
         ),
         ButtonDashboard(
           title: "Stok Barang",
@@ -230,8 +235,8 @@ class subNavbar extends StatelessWidget {
           icon: "produk.png",
         ),
         ButtonDashboard(
-          title: "Retur Penjualan",
-          icon: "transaksi.png",
+          title: "Data Transaksi",
+          icon: "data_transaksi.png",
         ),
       ],
     );
@@ -241,16 +246,15 @@ class subNavbar extends StatelessWidget {
 class ButtonDashboard extends StatelessWidget {
   final String? title;
   final String? icon;
-  const ButtonDashboard({super.key, this.title, this.icon});
+  void Function()? ontap;
+  ButtonDashboard({super.key, this.title, this.icon, this.ontap});
 
   @override
   Widget build(BuildContext context) {
     var style = Theme.of(context).textTheme;
     return Expanded(
       child: GestureDetector(
-        onTap: (() {
-          print("button aktif");
-        }),
+        onTap: ontap ?? () {},
         child: SizedBox(
           width: 250,
           child: Card(

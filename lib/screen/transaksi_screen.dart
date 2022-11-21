@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
+import 'package:kasir_online/widget/drawer_main.dart';
 
 class TransaksiScreen extends StatefulWidget {
   const TransaksiScreen({super.key});
@@ -11,10 +12,12 @@ class TransaksiScreen extends StatefulWidget {
 class _TransaksiScreenState extends State<TransaksiScreen> {
   String? chooseHarga;
   int item = 5;
+  bool isSelected = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appbarWidget(title: "Transaksi Baru"),
+      drawer: const DrawerMain(),
       body: ListView(children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -22,12 +25,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             Expanded(
                 flex: 2,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        DropdownHarga(),
+                        ropdownHarga(),
                         ButtonNavbar(
                           title: "Scan Barang",
                           icon: Icons.document_scanner_outlined,
@@ -45,7 +49,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         ),
                       ],
                     ),
-                    DatatableTransaksi(context),
+                    datatableTransaksi(context),
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -77,85 +81,42 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     );
   }
 
-  SingleChildScrollView DatatableTransaksi(BuildContext context) {
+  SingleChildScrollView datatableTransaksi(BuildContext context) {
+    List<Map<String, dynamic>> data = [
+      {"title": "ABC susu", "harga": "20000", "selected": true},
+      {"title": "ABC susu", "harga": "20000", "selected": false},
+      {"title": "ABC susu", "harga": "20000", "selected": false}
+    ];
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
-          dataTextStyle: const TextStyle(fontSize: 16, color: Colors.black),
-          dataRowHeight: 50,
-          headingRowColor:
-              MaterialStateProperty.resolveWith((states) => Colors.red),
-          decoration: const BoxDecoration(color: Colors.white),
-          border: TableBorder.all(color: Colors.grey),
-          columns: const [
-            DataColumn(label: Text("Nomor")),
-            DataColumn(label: Text("Nama Barang")),
-            DataColumn(label: Text("Jumlah")),
-            DataColumn(label: Text("Harga")),
-            DataColumn(label: Text("Total Harga")),
-          ],
-          rows: List.generate(
-            item,
-            (index) => DataRow(cells: [
-              DataCell(
-                  Text(
-                    "${index + 1}",
-                  ),
-                  showEditIcon: true,
-                  onTap: (() => showDialog(
-                      context: context,
-                      builder: (context) => Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal:
-                                    MediaQuery.of(context).size.width / 3,
-                                vertical:
-                                    MediaQuery.of(context).size.height / 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: Colors.white,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                const Text("Hapus?",
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold)),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                        onPressed: () {},
-                                        child: const Text("Tidak",
-                                            style: TextStyle(fontSize: 16))),
-                                    const SizedBox(
-                                      width: 30,
-                                    ),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            item -= 1;
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text("Yakin",
-                                            style: TextStyle(fontSize: 16))),
-                                  ],
-                                )
-                              ],
-                            ),
-                          )))),
-              DataCell(TextFormField()),
-              DataCell(TextFormField()),
-              DataCell(TextFormField()),
-              DataCell(TextFormField()),
-            ]),
-          )),
-    );
+        child: DataTable(
+      headingTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
+      dataTextStyle: const TextStyle(fontSize: 16, color: Colors.black),
+      dataRowHeight: 50,
+      headingRowColor:
+          MaterialStateProperty.resolveWith((states) => Colors.red),
+      decoration: const BoxDecoration(color: Colors.white),
+      border: TableBorder.all(color: Colors.grey),
+      columns: const [
+        DataColumn(label: Text("Nomor"), numeric: true),
+        DataColumn(label: Text("Nama Barang")),
+        DataColumn(label: Text("Harga")),
+      ],
+      rows: data
+          .map<DataRow>((data) => DataRow(
+                  selected: data['selected'],
+                  onSelectChanged: ((value) => setState(() {
+                        data['selected'] = value;
+                      })),
+                  cells: [
+                    DataCell(Text("1")),
+                    DataCell(Text(data['title']!)),
+                    DataCell(Text(data['harga']!))
+                  ]))
+          .toList(),
+    ));
   }
 
-  Row DropdownHarga() {
+  Row ropdownHarga() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

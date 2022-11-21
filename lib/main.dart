@@ -23,7 +23,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Kasir Online',
       theme: theme,
-      home: const DashboarScreen(),
+      initialRoute: "/",
+      routes: {
+        "/": (context) => const DashboarScreen(),
+      },
     );
   }
 }

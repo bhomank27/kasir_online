@@ -8,4 +8,8 @@ ThemeData theme = ThemeData(
     primarySwatch: Colors.red,
     primaryTextTheme: const TextTheme(headline1: TextStyle(fontSize: 24)),
     textTheme: const TextTheme(
-        headline2: TextStyle(fontSize: 20, color: Color(0xffd62828))));
+      subtitle1: TextStyle(fontSize: 16),
+      headline1: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      headline2: TextStyle(fontSize: 20, color: Color(0xffd62828)),
+      headline3: TextStyle(fontSize: 20),
+    ));
