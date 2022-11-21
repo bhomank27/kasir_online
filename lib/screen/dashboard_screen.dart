@@ -40,7 +40,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
       body: SingleChildScrollView(
         child: Stack(children: [
           Container(
-            color: Colors.red,
+            color: Theme.of(context).primaryColor,
             height: size.height / 5,
             width: size.width,
           ),
@@ -80,11 +80,11 @@ class _DashboarScreenState extends State<DashboarScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   child: TableCalendar(
-                    calendarStyle: const CalendarStyle(
+                    calendarStyle: CalendarStyle(
                         todayDecoration: BoxDecoration(
-                            color: Colors.red, shape: BoxShape.circle),
+                            color: Theme.of(context).primaryColor, shape: BoxShape.circle),
                         selectedDecoration: BoxDecoration(
-                            color: Colors.orange, shape: BoxShape.circle)),
+                            color: (Theme.of(context).primaryColor).withOpacity(0.6), shape: BoxShape.circle)),
                     onDaySelected: _onDaySelected,
                     selectedDayPredicate: ((day) {
                       isVisible = true;
@@ -96,11 +96,11 @@ class _DashboarScreenState extends State<DashboarScreen> {
                       });
                     }),
                     locale: "id",
-                    headerStyle: const HeaderStyle(
+                    headerStyle: HeaderStyle(
                         formatButtonVisible: false,
                         titleCentered: true,
                         titleTextStyle: TextStyle(
-                            color: Colors.red,
+                            color: Theme.of(context).primaryColor,
                             fontSize: 24,
                             fontWeight: FontWeight.bold)),
                     availableGestures: AvailableGestures.all,
@@ -120,41 +120,38 @@ class _DashboarScreenState extends State<DashboarScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                        "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
-                        style: TextStyle(fontSize: 20)),
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isVisible = false;
-                          });
-                        },
-                        icon: const Icon(Icons.close)),
-                  ],
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
+                      style: TextStyle(fontSize: 20)),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isVisible = false;
+                        });
+                      },
+                      icon: const Icon(Icons.close)),
+                ],
               ),
-              Column(
-                  children: List.generate(
-                      2,
-                      (index) => const SizedBox(
-                            width: double.infinity,
-                            child: Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(15.0),
-                                child: Text(
-                                  "Rp.12.000",
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                          ))),
+              Container(
+                height: MediaQuery.of(context).size.height /2.1,
+                child: ListView.builder(itemBuilder: (context,builder)=> const SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: Text(
+                        "Rp.12.000",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                )),
+              )
             ],
           )),
         )
@@ -193,8 +190,9 @@ class NavbarMain extends StatelessWidget {
                 Image.asset(
                   "assets/icon/transaksi.png",
                   height: 50,
+                  color: Theme.of(context).primaryColor,
                 ),
-                Text("Transaksi Baru", style: style.headline2)
+                Text("Transaksi Baru", style: style.headline2!.copyWith(color: Theme.of(context).primaryColor))
               ],
             ),
           ),
@@ -270,8 +268,9 @@ class ButtonDashboard extends StatelessWidget {
                   Image.asset(
                     "assets/icon/$icon",
                     height: 50,
+                    color: Theme.of(context).primaryColor,
                   ),
-                  Text(title!, style: style.headline2)
+                  Text(title!, style: style.headline2!.copyWith(color: Theme.of(context).primaryColor))
                 ],
               ),
             ),

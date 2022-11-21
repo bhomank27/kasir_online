@@ -12,25 +12,25 @@ class ProfileScreen extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 7),
         child: ListView(children: [
           ListTile(
-            leading: Image.asset("assets/icon/profile/toko.png"),
+            leading: Image.asset("assets/icon/profile/toko.png",color: Theme.of(context).primaryColor,),
             title: const Text("Nama Usaha"),
             subtitle: const Text("Garut Shop"),
           ),
           const Divider(),
           ListTile(
-            leading: Image.asset("assets/icon/profile/lokasi.png"),
+            leading: Image.asset("assets/icon/profile/lokasi.png",color: Theme.of(context).primaryColor,),
             title: const Text("Alamat"),
             subtitle: const Text("Jl. Raya Rancabango"),
           ),
           const Divider(),
           ListTile(
-            leading: Image.asset("assets/icon/profile/phone.png"),
+            leading: Image.asset("assets/icon/profile/phone.png",color: Theme.of(context).primaryColor),
             title: const Text("Telepon"),
             subtitle: const Text("031-012345"),
           ),
           const Divider(),
           ListTile(
-            leading: Image.asset("assets/icon/profile/kota.png"),
+            leading: Image.asset("assets/icon/profile/kota.png",color: Theme.of(context).primaryColor),
             title: const Text("Kota"),
             subtitle: const Text("Kota Garut"),
           ),
@@ -63,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
                             RawMaterialButton(
                               onPressed: () {},
                               padding: const EdgeInsets.all(10.0),
-                              fillColor: Colors.red,
+                              fillColor: Theme.of(context).primaryColor,
                               shape: const CircleBorder(),
                               child: const Icon(
                                 Icons.close,
@@ -73,7 +73,7 @@ class ProfileScreen extends StatelessWidget {
                             RawMaterialButton(
                               onPressed: () {},
                               padding: const EdgeInsets.all(10.0),
-                              fillColor: Colors.red,
+                              fillColor: Theme.of(context).primaryColor,
                               shape: const CircleBorder(),
                               child: const Icon(
                                 Icons.refresh,

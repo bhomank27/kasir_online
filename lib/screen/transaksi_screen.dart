@@ -76,8 +76,8 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       },
       color: MaterialStateColor.resolveWith((Set<MaterialState> states) =>
           states.contains(MaterialState.selected)
-              ? Colors.red
-              : Color.fromARGB(100, 215, 217, 219)),
+              ? Theme.of(context).primaryColor
+              : Colors.white),
       cells: [
         DataCell(
           Text(item.id.toString()),
@@ -180,6 +180,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         height: MediaQuery.of(context).size.height / 3,
                         child: SingleChildScrollView(
                           child: DataTable(
+                            headingTextStyle: const TextStyle(color: Colors.white),
+                            headingRowColor: MaterialStateColor.resolveWith((Set<MaterialState> states) => Theme.of(context).primaryColor),
+                            decoration: const BoxDecoration(
+                              color: Colors.white
+                            ),
                             columns: _createColumns(),
                             rows:
                                 _items.map((item) => _createRow(item)).toList(),
@@ -390,9 +395,9 @@ class ButtonNavbar extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: Colors.red,
+              color: Theme.of(context).primaryColor,
             ),
-            Text(title!, style: const TextStyle(color: Colors.red))
+            Text(title!, style: TextStyle(color: Theme.of(context).primaryColor))
           ],
         ));
   }
@@ -467,7 +472,7 @@ class BonTransaksi extends StatelessWidget {
                                     const BoxConstraints(maxHeight: 20),
                                 onPressed: () {},
                                 shape: const CircleBorder(),
-                                fillColor: Colors.red,
+                                fillColor: Theme.of(context).primaryColor,
                                 child: const Icon(
                                   Icons.close,
                                   color: Colors.white,
@@ -480,7 +485,7 @@ class BonTransaksi extends StatelessWidget {
                                     const BoxConstraints(maxHeight: 30),
                                 onPressed: () {},
                                 shape: const CircleBorder(),
-                                fillColor: Colors.red,
+                                fillColor: Theme.of(context).primaryColor,
                                 child: const Icon(
                                   Icons.file_copy,
                                   color: Colors.white,

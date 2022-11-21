@@ -34,7 +34,7 @@ class _ReturPenjualanScreenState extends State<ReturPenjualanScreen> {
                         ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor: Colors.red,
+                                foregroundColor: Theme.of(context).primaryColor,
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 50, vertical: 20)),
                             onPressed: () {
@@ -43,14 +43,13 @@ class _ReturPenjualanScreenState extends State<ReturPenjualanScreen> {
                               });
                             },
                             child: Row(
-                              children: [
-                                const Icon(Icons.add_circle),
-                                const SizedBox(
+                              children: const [
+                                Icon(Icons.add_circle),
+                                SizedBox(
                                   width: 20,
                                 ),
                                 Text("Tambah Data",
-                                    style:
-                                        Theme.of(context).textTheme.headline2)
+                                   style: TextStyle(fontSize: 20),)
                               ],
                             )),
                       ],
