@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
 
+import '../model/item_model.dart';
+
 class TransaksiScreen extends StatefulWidget {
   const TransaksiScreen({super.key});
 
@@ -13,6 +15,89 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   String? chooseHarga;
   int item = 5;
   bool isSelected = false;
+  bool isSearch = false;
+  List<Item> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _items = _generateItems();
+    });
+  }
+
+  List<Item> _generateItems() {
+    return List.generate(10, (int index) {
+      return Item(
+        id: index + 1,
+        name: 'Item ${index + 1}',
+        price: index * 1000.00,
+        description: 'Details of item ${index + 1}',
+        isSelected: false,
+      );
+    });
+  }
+
+  List<DataColumn> _createColumns() {
+    return [
+      const DataColumn(
+        label: Text('No'),
+        numeric: true,
+      ),
+      const DataColumn(
+        label: Text('Name'),
+        numeric: false,
+        tooltip: 'Name of the item',
+      ),
+      const DataColumn(
+        label: Text('Price'),
+        numeric: false,
+        tooltip: 'Price of the item',
+      ),
+      const DataColumn(
+        label: Text('Description'),
+        numeric: false,
+        tooltip: 'Description of the item',
+      ),
+    ];
+  }
+
+  DataRow _createRow(Item item) {
+    return DataRow(
+      // index: item.id, // for DataRow.byIndex
+      key: ValueKey(item.id),
+      selected: item.isSelected,
+      onSelectChanged: (bool? isSelected) {
+        if (isSelected != null) {
+          item.isSelected = isSelected;
+
+          setState(() {});
+        }
+      },
+      color: MaterialStateColor.resolveWith((Set<MaterialState> states) =>
+          states.contains(MaterialState.selected)
+              ? Colors.red
+              : Color.fromARGB(100, 215, 217, 219)),
+      cells: [
+        DataCell(
+          Text(item.id.toString()),
+        ),
+        DataCell(
+          Text(item.name),
+          placeholder: false,
+          showEditIcon: true,
+          onTap: () {
+            print('onTap');
+          },
+        ),
+        DataCell(Text(item.price.toString())),
+        DataCell(
+          Text(item.description),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,55 +109,148 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           children: [
             Expanded(
                 flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ropdownHarga(),
-                        ButtonNavbar(
-                          title: "Scan Barang",
-                          icon: Icons.document_scanner_outlined,
-                          onPressed: () {},
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          dropdownHarga(),
+                          Visibility(
+                              visible: isSearch,
+                              child: Row(
+                                children: [
+                                  Container(
+                                      width: 400,
+                                      child: TextFormField(
+                                        decoration: const InputDecoration(
+                                            hintText: "Silahkan Cari .."),
+                                      )),
+                                  const Icon(Icons.search),
+                                  IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isSearch = false;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.close))
+                                ],
+                              )),
+                          Visibility(
+                            visible: !isSearch,
+                            child: Row(
+                              children: [
+                                ButtonNavbar(
+                                  title: "Scan Barang",
+                                  icon: Icons.document_scanner_outlined,
+                                  onPressed: () {},
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ButtonNavbar(
+                                  title: "Cari",
+                                  icon: Icons.search,
+                                  onPressed: () {
+                                    setState(() {
+                                      isSearch = true;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ButtonNavbar(
+                                  title: "Refresh",
+                                  icon: Icons.refresh,
+                                  onPressed: () {},
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Container(
+                        height: MediaQuery.of(context).size.height / 3,
+                        child: SingleChildScrollView(
+                          child: DataTable(
+                            columns: _createColumns(),
+                            rows:
+                                _items.map((item) => _createRow(item)).toList(),
+                          ),
                         ),
-                        ButtonNavbar(
-                          title: "Cari",
-                          icon: Icons.search,
-                          onPressed: () {},
-                        ),
-                        ButtonNavbar(
-                          title: "Refresh",
-                          icon: Icons.refresh,
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                    datatableTransaksi(context),
-                    ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            item += 1;
-                          });
-                        },
-                        child: const Text("+ Tambah Item")),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Total(
-                          title: "Grand Total",
-                          child: const Text("Rp 2.000.000.000",
-                              style: TextStyle(fontSize: 20)),
-                        ),
-                        Total(title: "Tunai", child: TextFormField()),
-                        Total(
-                            title: "Kembali",
-                            child: const Text("Rp. 9000000",
-                                style: TextStyle(fontSize: 20))),
-                      ],
-                    )
-                  ],
+                      ),
+
+                      // datatableTransaksi(context),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 340,
+                            child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.all(15)),
+                                onPressed: () {
+                                  setState(() {
+                                    item += 1;
+                                  });
+                                },
+                                child: const Text("+ Tambah Item",
+                                    style: TextStyle(fontSize: 20))),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Total(
+                                title: "Grand Total",
+                                child: const Text("Rp 2.000.000.000",
+                                    style: TextStyle(fontSize: 20)),
+                              ),
+                              Total(title: "Tunai", child: TextFormField()),
+                              Total(
+                                  title: "Kembali",
+                                  child: const Text("Rp. 9000000",
+                                      style: TextStyle(fontSize: 20))),
+                              const SizedBox(
+                                height: 30,
+                              ),
+                              SizedBox(
+                                width: 370,
+                                child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.all(15)),
+                                    onPressed: () {},
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.attach_money),
+                                        const SizedBox(
+                                          width: 50,
+                                        ),
+                                        Text(
+                                          "Bayar",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline3!
+                                              .copyWith(color: Colors.white),
+                                        ),
+                                      ],
+                                    )),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 )),
             const BonTransaksi(),
           ],
@@ -108,7 +286,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         data['selected'] = value;
                       })),
                   cells: [
-                    DataCell(Text("1")),
+                    const DataCell(Text("1")),
                     DataCell(Text(data['title']!)),
                     DataCell(Text(data['harga']!))
                   ]))
@@ -116,7 +294,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     ));
   }
 
-  Row ropdownHarga() {
+  Row dropdownHarga() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -168,13 +346,19 @@ class Total extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(title!,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        SizedBox(
+          width: 150,
+          child: Text(title!,
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ),
         Container(
           width: 200,
           margin: const EdgeInsets.all(10),
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(border: Border.all()),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(width: 2)),
           child: Center(
             child: child,
           ),
@@ -244,7 +428,7 @@ class BonTransaksi extends StatelessWidget {
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.80,
                   child: ListView.separated(
-                    itemCount: 10,
+                    itemCount: 3,
                     separatorBuilder: (BuildContext context, int index) {
                       return const Divider(
                         height: 10,
