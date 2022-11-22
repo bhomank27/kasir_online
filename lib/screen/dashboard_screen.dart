@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:kasir_online/screen/produk_screen.dart';
+import 'package:kasir_online/screen/product_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
-import 'package:kasir_online/screen/transaksi_screen.dart';
+import 'package:kasir_online/screen/transaction.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/calendar.dart';
@@ -83,9 +83,12 @@ class _DashboarScreenState extends State<DashboarScreen> {
                   child: TableCalendar(
                     calendarStyle: CalendarStyle(
                         todayDecoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor, shape: BoxShape.circle),
+                            color: Theme.of(context).primaryColor,
+                            shape: BoxShape.circle),
                         selectedDecoration: BoxDecoration(
-                            color: (Theme.of(context).primaryColor).withOpacity(0.6), shape: BoxShape.circle)),
+                            color: (Theme.of(context).primaryColor)
+                                .withOpacity(0.6),
+                            shape: BoxShape.circle)),
                     onDaySelected: _onDaySelected,
                     selectedDayPredicate: ((day) {
                       isVisible = true;
@@ -124,8 +127,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                      "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
+                  Text("Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
                       style: TextStyle(fontSize: 20)),
                   IconButton(
                       onPressed: () {
@@ -137,21 +139,21 @@ class _DashboarScreenState extends State<DashboarScreen> {
                 ],
               ),
               Container(
-                height: MediaQuery.of(context).size.height /2.1,
-                child: ListView.builder(itemBuilder: (context,builder)=> const SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Text(
-                        "Rp.12.000",
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                )),
+                height: MediaQuery.of(context).size.height / 2.1,
+                child: ListView.builder(
+                    itemBuilder: (context, builder) => const SizedBox(
+                          width: double.infinity,
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(15.0),
+                              child: Text(
+                                "Rp.12.000",
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        )),
               )
             ],
           )),
@@ -193,7 +195,9 @@ class NavbarMain extends StatelessWidget {
                   height: 50,
                   color: Theme.of(context).primaryColor,
                 ),
-                Text("Transaksi Baru", style: style.headline2!.copyWith(color: Theme.of(context).primaryColor))
+                Text("Transaksi Baru",
+                    style: style.headline2!
+                        .copyWith(color: Theme.of(context).primaryColor))
               ],
             ),
           ),
@@ -232,7 +236,8 @@ class subNavbar extends StatelessWidget {
         ButtonDashboard(
           title: "Produk",
           icon: "produk.png",
-          ontap: ()=> Navigator.push(context, (MaterialPageRoute(builder: (context)=> ProdukScreen()))),
+          ontap: () => Navigator.push(context,
+              (MaterialPageRoute(builder: (context) => ProdukScreen()))),
         ),
         ButtonDashboard(
           title: "Data Transaksi",
@@ -272,7 +277,9 @@ class ButtonDashboard extends StatelessWidget {
                     height: 50,
                     color: Theme.of(context).primaryColor,
                   ),
-                  Text(title!, style: style.headline2!.copyWith(color: Theme.of(context).primaryColor))
+                  Text(title!,
+                      style: style.headline2!
+                          .copyWith(color: Theme.of(context).primaryColor))
                 ],
               ),
             ),
