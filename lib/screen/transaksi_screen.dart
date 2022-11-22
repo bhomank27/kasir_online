@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
 
@@ -29,10 +30,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   List<Item> _generateItems() {
     return List.generate(10, (int index) {
       return Item(
-        id: index + 1,
+        id: index + 2,
         name: 'Item ${index + 1}',
-        price: index * 1000.00,
-        description: 'Details of item ${index + 1}',
+        price: (index + 1) * 1000.00,
+        total: 2,
+        totalPrice: 2000,
         isSelected: false,
       );
     });
@@ -45,19 +47,24 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         numeric: true,
       ),
       const DataColumn(
-        label: Text('Name'),
+        label: Text('Nama Barang'),
         numeric: false,
         tooltip: 'Name of the item',
       ),
       const DataColumn(
-        label: Text('Price'),
+        label: Text('Jumlah'),
+        numeric: false,
+        tooltip: 'Total of the item',
+      ),
+      const DataColumn(
+        label: Text('Harga'),
         numeric: false,
         tooltip: 'Price of the item',
       ),
       const DataColumn(
-        label: Text('Description'),
+        label: Text('Total Harga'),
         numeric: false,
-        tooltip: 'Description of the item',
+        tooltip: 'Total Price of the item',
       ),
     ];
   }
@@ -76,23 +83,41 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       },
       color: MaterialStateColor.resolveWith((Set<MaterialState> states) =>
           states.contains(MaterialState.selected)
-              ? Theme.of(context).primaryColor
+              ? Theme.of(context).primaryColor.withOpacity(0.2)
               : Colors.white),
       cells: [
         DataCell(
-          Text(item.id.toString()),
+          Text(
+            item.id.toString(),
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
         ),
         DataCell(
-          Text(item.name),
+          Text(
+            item.name,
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
           placeholder: false,
           showEditIcon: true,
           onTap: () {
             print('onTap');
           },
         ),
-        DataCell(Text(item.price.toString())),
+        DataCell(Text(
+          item.total.toString(),
+          style: Theme.of(context).textTheme.subtitle1,
+        )),
         DataCell(
-          Text(item.description),
+          Text(
+            item.price.toString(),
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
+        ),
+        DataCell(
+          Text(
+            item.totalPrice.toString(),
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
         ),
       ],
     );
@@ -108,7 +133,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-                flex: 2,
+                flex: 3,
                 child: Container(
                   margin: const EdgeInsets.all(20),
                   child: Column(
@@ -121,23 +146,41 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                           dropdownHarga(),
                           Visibility(
                               visible: isSearch,
-                              child: Row(
-                                children: [
-                                  Container(
-                                      width: 400,
-                                      child: TextFormField(
-                                        decoration: const InputDecoration(
-                                            hintText: "Silahkan Cari .."),
-                                      )),
-                                  const Icon(Icons.search),
-                                  IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isSearch = false;
-                                        });
-                                      },
-                                      icon: const Icon(Icons.close))
-                                ],
+                              child: Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 10),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 1, horizontal: 5),
+                                  color: Colors.white,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      SizedBox(
+                                          width: 400,
+                                          child: TextFormField(
+                                            decoration: const InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: "Silahkan Cari .."),
+                                          )),
+                                      Icon(
+                                        Icons.search,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                      IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              isSearch = false;
+                                            });
+                                          },
+                                          icon: Icon(
+                                            Icons.close,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                          ))
+                                    ],
+                                  ),
+                                ),
                               )),
                           Visibility(
                             visible: !isSearch,
@@ -176,23 +219,28 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                       const SizedBox(
                         height: 20,
                       ),
-                      Container(
-                        height: MediaQuery.of(context).size.height / 3,
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height / 2.5,
                         child: SingleChildScrollView(
                           child: DataTable(
-                            headingTextStyle: const TextStyle(color: Colors.white),
-                            headingRowColor: MaterialStateColor.resolveWith((Set<MaterialState> states) => Theme.of(context).primaryColor),
-                            decoration: const BoxDecoration(
-                              color: Colors.white
-                            ),
+                            showCheckboxColumn: false,
+                            headingTextStyle: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                            headingRowColor: MaterialStateColor.resolveWith(
+                                (Set<MaterialState> states) =>
+                                    Theme.of(context).primaryColor),
+                            decoration:
+                                const BoxDecoration(color: Colors.white),
                             columns: _createColumns(),
                             rows:
                                 _items.map((item) => _createRow(item)).toList(),
                           ),
                         ),
                       ),
-
-                      // datatableTransaksi(context),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -215,16 +263,23 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                             children: [
                               Total(
                                 title: "Grand Total",
-                                child: const Text("Rp 2.000.000.000",
-                                    style: TextStyle(fontSize: 20)),
+                                child: Text("Rp 2.000.000.000",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headline3!
+                                        .copyWith(fontWeight: FontWeight.bold)),
                               ),
                               Total(title: "Tunai", child: TextFormField()),
                               Total(
                                   title: "Kembali",
-                                  child: const Text("Rp. 9000000",
-                                      style: TextStyle(fontSize: 20))),
+                                  child: Text("Rp. 9000000",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline3!
+                                          .copyWith(
+                                              fontWeight: FontWeight.bold))),
                               const SizedBox(
-                                height: 30,
+                                height: 10,
                               ),
                               SizedBox(
                                 width: 370,
@@ -262,41 +317,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         )
       ]),
     );
-  }
-
-  SingleChildScrollView datatableTransaksi(BuildContext context) {
-    List<Map<String, dynamic>> data = [
-      {"title": "ABC susu", "harga": "20000", "selected": true},
-      {"title": "ABC susu", "harga": "20000", "selected": false},
-      {"title": "ABC susu", "harga": "20000", "selected": false}
-    ];
-    return SingleChildScrollView(
-        child: DataTable(
-      headingTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
-      dataTextStyle: const TextStyle(fontSize: 16, color: Colors.black),
-      dataRowHeight: 50,
-      headingRowColor:
-          MaterialStateProperty.resolveWith((states) => Colors.red),
-      decoration: const BoxDecoration(color: Colors.white),
-      border: TableBorder.all(color: Colors.grey),
-      columns: const [
-        DataColumn(label: Text("Nomor"), numeric: true),
-        DataColumn(label: Text("Nama Barang")),
-        DataColumn(label: Text("Harga")),
-      ],
-      rows: data
-          .map<DataRow>((data) => DataRow(
-                  selected: data['selected'],
-                  onSelectChanged: ((value) => setState(() {
-                        data['selected'] = value;
-                      })),
-                  cells: [
-                    const DataCell(Text("1")),
-                    DataCell(Text(data['title']!)),
-                    DataCell(Text(data['harga']!))
-                  ]))
-          .toList(),
-    ));
   }
 
   Row dropdownHarga() {
@@ -354,8 +374,10 @@ class Total extends StatelessWidget {
         SizedBox(
           width: 150,
           child: Text(title!,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              style: Theme.of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontWeight: FontWeight.bold)),
         ),
         Container(
           width: 200,
@@ -397,7 +419,8 @@ class ButtonNavbar extends StatelessWidget {
               icon,
               color: Theme.of(context).primaryColor,
             ),
-            Text(title!, style: TextStyle(color: Theme.of(context).primaryColor))
+            Text(title!,
+                style: TextStyle(color: Theme.of(context).primaryColor))
           ],
         ));
   }

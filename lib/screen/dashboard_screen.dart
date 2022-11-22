@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/screen/produk_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
 import 'package:kasir_online/screen/transaksi_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
@@ -229,8 +230,9 @@ class subNavbar extends StatelessWidget {
           icon: "laporan.png",
         ),
         ButtonDashboard(
-          title: "Retur Penjualan",
+          title: "Produk",
           icon: "produk.png",
+          ontap: ()=> Navigator.push(context, (MaterialPageRoute(builder: (context)=> ProdukScreen()))),
         ),
         ButtonDashboard(
           title: "Data Transaksi",
