@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
 
   @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  bool isObsecure = true;
+  @override
   Widget build(BuildContext context) {
+    final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    TextEditingController nameCtrl = TextEditingController();
+    TextEditingController emailCtrl = TextEditingController();
+    TextEditingController passCtrl = TextEditingController();
     return Scaffold(
         body: SafeArea(
       child: SingleChildScrollView(
@@ -48,15 +58,49 @@ class SignUpScreen extends StatelessWidget {
                         children: [
                           InputSignup(
                             title: "Nama",
-                            hint: "Masukkan Nama Lengkap",
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Silahkan Isi nama"),
+                                ),
+                              ),
+                            ],
                           ),
                           InputSignup(
                             title: "Email",
-                            hint: "Masukkan Alamat Email",
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Silahkan Isi nama"),
+                                ),
+                              ),
+                            ],
                           ),
                           InputSignup(
                             title: "Kata Sandi",
-                            hint: "Masukkan Kata sandi",
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  obscureText: isObsecure,
+                                  decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Silahkan Isi nama"),
+                                ),
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isObsecure = !isObsecure;
+                                    });
+                                  },
+                                  icon: Icon(isObsecure
+                                      ? Icons.visibility
+                                      : Icons.visibility_off))
+                            ],
                           )
                         ],
                       ),
@@ -81,13 +125,7 @@ class SignUpScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10)),
                               padding:
                                   const EdgeInsets.symmetric(vertical: 20)),
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const DashboarScreen()));
-                          },
+                          onPressed: () {},
                           child: Text(
                             "Daftar",
                             style: Theme.of(context)
@@ -108,11 +146,14 @@ class SignUpScreen extends StatelessWidget {
 }
 
 class InputSignup extends StatelessWidget {
+  TextEditingController? controller;
   String? title;
-  String? hint;
-  bool? obsecure;
-  InputSignup({Key? key, this.title, this.hint, this.obsecure})
-      : super(key: key);
+  List<Widget>? children;
+  InputSignup({
+    Key? key,
+    this.title,
+    this.children,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -133,17 +174,7 @@ class InputSignup extends StatelessWidget {
                 border: Border.all(color: Colors.grey)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width / 3,
-                  child: TextFormField(
-                    obscureText: obsecure ?? false,
-                    decoration: InputDecoration(
-                        border: InputBorder.none, hintText: hint),
-                  ),
-                ),
-                IconButton(onPressed: () {}, icon: Icon(Icons.remove_red_eye))
-              ],
+              children: children!,
             ),
           )
         ],
