@@ -52,12 +52,12 @@ class DrawerMain extends StatelessWidget {
             ],
           )),
       ListTile(
-        onTap: () =>
-            Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false),
+        onTap: () => Navigator.pushNamedAndRemoveUntil(
+            context, "/dashboard", (route) => false),
         leading: Icon(
           Icons.dashboard,
           size: 30,
-          color:Theme.of(context).primaryColor,
+          color: Theme.of(context).primaryColor,
         ),
         title: const Text("Dashboard", style: TextStyle(fontSize: 24)),
       ),

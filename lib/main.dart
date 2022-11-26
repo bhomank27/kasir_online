@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
+import 'package:kasir_online/screen/sigin_screen.dart';
 import 'package:kasir_online/screen/signup_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 
@@ -27,6 +28,8 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
         "/": (context) => const SignUpScreen(),
+        "/signIn": (context) => const SignInScreen(),
+        "/dashboard": (context) => const DashboarScreen(),
       },
     );
   }

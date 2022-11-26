@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({Key? key}) : super(key: key);
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   bool isObsecure = true;
   @override
   Widget build(BuildContext context) {
     // final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    TextEditingController nameCtrl = TextEditingController();
     TextEditingController emailCtrl = TextEditingController();
     TextEditingController passCtrl = TextEditingController();
 
@@ -50,29 +49,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Column(
                         children: [
                           Text(
-                            "Daftar Akun",
+                            "Masuk Akun",
                             style: Theme.of(context).textTheme.headline1,
                           ),
-                          const Text("Daftarkan Akun Anda"),
+                          const Text("Silahkan Masukan Akun Anda"),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          InputSignup(
-                            title: "Nama",
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: nameCtrl,
-                                  style: theme.textTheme.headline3,
-                                  decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: "Silahkan Isi nama"),
-                                ),
-                              ),
-                            ],
-                          ),
                           InputSignup(
                             title: "Email",
                             children: [
@@ -118,15 +103,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Sudah punya Akun ? ",
+                            "Belum punya Akun ? ",
                             style: Theme.of(context).textTheme.headline3,
                           ),
                           TextButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/signIn');
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context, '/', (route) => false);
                               },
                               child: Text(
-                                "Masuk Disini",
+                                "Daftar disini",
                                 style: Theme.of(context).textTheme.headline2,
                               ))
                         ],
@@ -138,14 +124,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               padding:
                                   const EdgeInsets.symmetric(vertical: 20)),
                           onPressed: () {
-                            print(nameCtrl.text);
                             print(emailCtrl.text);
                             print(passCtrl.text);
                             Navigator.pushNamedAndRemoveUntil(
                                 context, '/dashboard', (route) => false);
                           },
                           child: Text(
-                            "Daftar",
+                            "Masuk",
                             style: Theme.of(context)
                                 .textTheme
                                 .headline3!

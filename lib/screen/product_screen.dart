@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:kasir_online/model/item_model.dart';
 import 'package:kasir_online/model/product_model.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
@@ -17,13 +19,33 @@ class ProdukScreen extends StatefulWidget {
 class _ProdukScreenState extends State<ProdukScreen> {
   String? choosenKey;
   bool isVisible = false;
-  List<Produk> _items = [];
+  Produk? data = Produk(
+      kode: 12345678,
+      nama: "- Nama Produk -",
+      kategori: "none",
+      isSelected: false);
+  var kodeCtrl = TextEditingController();
+  var namaCtrl = TextEditingController();
+  var kategoriCtrl = TextEditingController();
+  final List<Produk> _items = [];
+  List dropdownitem = [];
 
   @override
   void initState() {
     super.initState();
+    // setState(() {
+    //   _items = _generateProduks();
+    // });
     setState(() {
-      _items = _generateProduks();
+      dropdownitem = _generateDropdownKategori(_items);
+    });
+  }
+
+  List _generateDropdownKategori(List<Produk> item) {
+    return List.generate(_items.length, (index) {
+      return {
+        'key': item[index].nama,
+      };
     });
   }
 
@@ -72,7 +94,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
                                     dropdownHarga(),
-                                    const TotalItem()
+                                    TotalItem(_items.length),
                                   ],
                                 )
                               ],
@@ -114,7 +136,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                 ),
                                 Flexible(
                                   child: Text(
-                                    "Abc Kecap Sedap",
+                                    data!.nama,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headline1!
@@ -168,89 +190,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
             foregroundColor: Colors.red,
             padding: const EdgeInsets.symmetric(vertical: 20)),
         onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                    contentPadding: const EdgeInsets.all(100),
-                    content: SingleChildScrollView(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              InputProduk(
-                                title: "Kode Barang",
-                              ),
-                              InputProduk(
-                                title: "Nama Barang",
-                              ),
-                              InputProduk(
-                                title: "Kategori Barang",
-                              ),
-                              const SizedBox(
-                                height: 50,
-                              ),
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 10)),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Row(
-                                    children: const [
-                                      Icon(Icons.save),
-                                      SizedBox(
-                                        width: 20,
-                                      ),
-                                      Text("Simpan ")
-                                    ],
-                                  ))
-                            ],
-                          ),
-                          IconButton(
-                              padding: EdgeInsets.all(0),
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.document_scanner_outlined,
-                                color: Colors.red,
-                                size: 50,
-                              )),
-                          const SizedBox(
-                            width: 30,
-                          ),
-                          Column(children: [
-                            Container(
-                              height: 150,
-                              width: 150,
-                              decoration: BoxDecoration(
-                                  image: const DecorationImage(
-                                      image: AssetImage(
-                                          "assets/icon/profile.png")),
-                                  border: Border.all()),
-                            ),
-                            const SizedBox(height: 10),
-                            ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 10)),
-                                onPressed: () {},
-                                child: Row(
-                                  children: const [
-                                    Icon(Icons.cloud_upload_rounded),
-                                    SizedBox(
-                                      width: 20,
-                                    ),
-                                    Text("Upload Gambar ")
-                                  ],
-                                ))
-                          ])
-                        ],
-                      ),
-                    ),
-                  ));
+          dialogProduk(context: context);
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -270,7 +210,115 @@ class _ProdukScreenState extends State<ProdukScreen> {
         ));
   }
 
+  Future<dynamic> dialogProduk({BuildContext? context, Produk? item}) {
+    return showDialog(
+        context: context!,
+        builder: (context) => AlertDialog(
+              contentPadding: const EdgeInsets.all(100),
+              content: SingleChildScrollView(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        InputProduk(
+                          title: "Kode Barang",
+                          controller: kodeCtrl,
+                          item: item?.kode.toString() ?? '',
+                        ),
+                        InputProduk(
+                          title: "Nama Barang",
+                          controller: namaCtrl,
+                          item: item?.nama ?? '',
+                        ),
+                        InputProduk(
+                          title: "Kategori Barang",
+                          controller: kategoriCtrl,
+                          item: item?.kategori ?? '',
+                        ),
+                        const SizedBox(
+                          height: 50,
+                        ),
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 10)),
+                            onPressed: () {
+                              setState(() {
+                                _items.add(Produk(
+                                    kode: int.parse(kodeCtrl.text),
+                                    nama: namaCtrl.text,
+                                    kategori: kategoriCtrl.text,
+                                    isSelected: false));
+                                dropdownitem =
+                                    _generateDropdownKategori(_items);
+                              });
+                              kodeCtrl.clear();
+                              namaCtrl.clear();
+                              kategoriCtrl.clear();
+                              Navigator.pop(context);
+                            },
+                            child: Row(
+                              children: const [
+                                Icon(Icons.save),
+                                SizedBox(
+                                  width: 20,
+                                ),
+                                Text("Simpan ")
+                              ],
+                            ))
+                      ],
+                    ),
+                    IconButton(
+                        padding: EdgeInsets.all(0),
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.document_scanner_outlined,
+                          color: Colors.red,
+                          size: 50,
+                        )),
+                    const SizedBox(
+                      width: 30,
+                    ),
+                    Column(children: [
+                      Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                            image: const DecorationImage(
+                                image: AssetImage("assets/icon/profile.png")),
+                            border: Border.all()),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10)),
+                          onPressed: () {},
+                          child: Row(
+                            children: const [
+                              Icon(Icons.cloud_upload_rounded),
+                              SizedBox(
+                                width: 20,
+                              ),
+                              Text("Upload Gambar ")
+                            ],
+                          ))
+                    ])
+                  ],
+                ),
+              ),
+            ));
+  }
+
   Row dropdownHarga() {
+    if (dropdownitem.isEmpty) {
+      dropdownitem = [
+        {"key": "Belum ada Produk"}
+      ];
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -285,7 +333,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               hint: Text(
-                "Nama Barang",
+                "Nama Produk",
                 style: Theme.of(context).textTheme.headline3,
               ),
               isExpanded: true,
@@ -293,10 +341,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
               style: const TextStyle(color: Colors.white),
               iconEnabledColor: Colors.black,
               borderRadius: BorderRadius.circular(10),
-              items: [
-                {"key": "ABC SUSU"},
-                {"key": "ABC KOPI SUSU"}
-              ]
+              items: dropdownitem
                   .map<DropdownMenuItem<String>>((item) =>
                       DropdownMenuItem<String>(
                           value: item.toString(),
@@ -363,7 +408,15 @@ class _ProdukScreenState extends State<ProdukScreen> {
         if (isSelected != null) {
           item.isSelected = isSelected;
 
-          setState(() {});
+          setState(() {
+            data = item;
+          });
+
+          Timer(
+              const Duration(milliseconds: 200),
+              () => setState(() {
+                    item.isSelected = false;
+                  }));
         }
       },
       color: MaterialStateColor.resolveWith((Set<MaterialState> states) =>
@@ -385,7 +438,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
           placeholder: false,
           showEditIcon: true,
           onTap: () {
-            print('onTap');
+            dialogProduk(context: context, item: item);
           },
         ),
         DataCell(Text(
@@ -395,16 +448,22 @@ class _ProdukScreenState extends State<ProdukScreen> {
       ],
     );
   }
+
+  @override
+  void dispose() {
+    kodeCtrl.dispose();
+    namaCtrl.dispose();
+    kategoriCtrl.dispose();
+    super.dispose();
+  }
 }
 
 class InputProduk extends StatelessWidget {
   String? title;
   TextEditingController? controller;
-  InputProduk({
-    Key? key,
-    this.title,
-    this.controller,
-  }) : super(key: key);
+  String? item;
+  InputProduk({Key? key, this.title, this.controller, this.item})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +476,12 @@ class InputProduk extends StatelessWidget {
             style: Theme.of(context).textTheme.headline3,
           ),
         ),
-        SizedBox(width: 300, child: TextFormField())
+        SizedBox(
+            width: 300,
+            child: TextFormField(
+              controller: controller,
+              decoration: InputDecoration(hintText: item ?? ""),
+            ))
       ],
     );
   }
@@ -457,9 +521,8 @@ class HargaItem extends StatelessWidget {
 }
 
 class TotalItem extends StatelessWidget {
-  const TotalItem({
-    Key? key,
-  }) : super(key: key);
+  int items;
+  TotalItem(this.items);
 
   @override
   Widget build(BuildContext context) {
@@ -476,7 +539,7 @@ class TotalItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               border: Border.all(color: Colors.grey, width: 2)),
           child: Text(
-            "2440",
+            items.toString(),
             style: Theme.of(context).textTheme.headline3,
           ),
         )
