@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/screen/dataTransaksi_screen.dart';
 import 'package:kasir_online/screen/product_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
 import 'package:kasir_online/screen/transaction.dart';
@@ -34,7 +35,7 @@ class _DashboarScreenState extends State<DashboarScreen> {
     var size = MediaQuery.of(context).size;
     var style = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: appbarWidget(),
+      appBar: appbarWidget(context: context),
       drawer: const DrawerMain(),
       body: SingleChildScrollView(
         child: Stack(children: [
@@ -240,6 +241,8 @@ class subNavbar extends StatelessWidget {
         ButtonDashboard(
           title: "Data Transaksi",
           icon: "data_transaksi.png",
+          ontap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => DataTransaksiScreen())),
         ),
       ],
     );

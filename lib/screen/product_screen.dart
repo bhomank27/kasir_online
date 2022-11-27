@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:math';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:kasir_online/model/item_model.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/model/product_model.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
@@ -17,6 +16,8 @@ class ProdukScreen extends StatefulWidget {
 }
 
 class _ProdukScreenState extends State<ProdukScreen> {
+  String _scanBarcode = 'Unknown';
+  final player = AudioCache();
   String? choosenKey;
   bool isVisible = false;
   Produk? data = Produk(
@@ -38,6 +39,30 @@ class _ProdukScreenState extends State<ProdukScreen> {
     // });
     setState(() {
       dropdownitem = _generateDropdownKategori(_items);
+    });
+  }
+
+  // Future<void> startBarcodeScanStream() async {
+  //   FlutterBarcodeScanner.getBarcodeStreamReceiver(
+  //           '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
+  //       .listen((barcode) => print(barcode));
+  // }
+
+  Future<void> scanBarcodeNormal() async {
+    String barcodeScanRes;
+    try {
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      print(barcodeScanRes);
+      // player.play('beep.mp3');
+    } on PlatformException {
+      barcodeScanRes = 'Failed to get platform version.';
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _scanBarcode = barcodeScanRes;
     });
   }
 
@@ -64,119 +89,130 @@ class _ProdukScreenState extends State<ProdukScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: appbarWidget(title: "Produk"),
+      appBar: appbarWidget(title: "Produk", context: context),
       drawer: const DrawerMain(),
-      body: Stack(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // data table
-                Expanded(
-                    flex: 2,
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 20),
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: Colors.white,
-                      ),
+      body: Builder(
+        builder: (BuildContext context) {
+          return Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    // data table
+                    Expanded(
+                        flex: 2,
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 20),
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: Colors.white,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 15),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        dropdownHarga(),
+                                        TotalItem(_items.length),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+
+                              //data table produk
+                              dataTableTransaksi(context),
+                            ],
+                          ),
+                        )),
+
+                    //preview item
+                    Expanded(
+                      flex: 1,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          buttonAddProduct(context),
+                          const SizedBox(height: 15),
                           Container(
-                            margin: const EdgeInsets.only(bottom: 15),
+                            padding: const EdgeInsets.all(15),
+                            color: Colors.red,
                             child: Column(
                               children: [
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    dropdownHarga(),
-                                    TotalItem(_items.length),
+                                    Container(
+                                      height: 100,
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          image: const DecorationImage(
+                                              image: AssetImage(
+                                                  "assets/icon/profile/toko.png"))),
+                                    ),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        data!.nama,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline1!
+                                            .copyWith(
+                                              color: Colors.white,
+                                            ),
+                                      ),
+                                    ),
                                   ],
                                 )
                               ],
                             ),
                           ),
-
-                          //data table produk
-                          dataTableTransaksi(context),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(15),
+                                    bottomRight: Radius.circular(15))),
+                            child: Column(
+                              children: [
+                                HargaItem(
+                                    title: "Harga Jual Umum", harga: "7.200"),
+                                HargaItem(
+                                    title: "Harga Jual Member", harga: "0"),
+                                HargaItem(
+                                    title: "Harga Jual Grosir", harga: "0"),
+                                HargaItem(
+                                    title: "Harga Jual Online", harga: "0"),
+                                HargaItem(
+                                    title: "Harga Jual Khusus", harga: "0"),
+                                HargaItem(
+                                    title: "Harga Jual Spesial", harga: "0"),
+                                HargaItem(
+                                    title: "Harga Jual Lain-lain", harga: "0"),
+                              ],
+                            ),
+                          )
                         ],
                       ),
-                    )),
-
-                //preview item
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      buttonAddProduct(context),
-                      const SizedBox(height: 15),
-                      Container(
-                        padding: const EdgeInsets.all(15),
-                        color: Colors.red,
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  height: 100,
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: const DecorationImage(
-                                          image: AssetImage(
-                                              "assets/icon/profile/toko.png"))),
-                                ),
-                                const SizedBox(
-                                  width: 20,
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    data!.nama,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline1!
-                                        .copyWith(
-                                          color: Colors.white,
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(15),
-                                bottomRight: Radius.circular(15))),
-                        child: Column(
-                          children: [
-                            HargaItem(title: "Harga Jual Umum", harga: "7.200"),
-                            HargaItem(title: "Harga Jual Member", harga: "0"),
-                            HargaItem(title: "Harga Jual Grosir", harga: "0"),
-                            HargaItem(title: "Harga Jual Online", harga: "0"),
-                            HargaItem(title: "Harga Jual Khusus", harga: "0"),
-                            HargaItem(title: "Harga Jual Spesial", harga: "0"),
-                            HargaItem(
-                                title: "Harga Jual Lain-lain", harga: "0"),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -190,7 +226,8 @@ class _ProdukScreenState extends State<ProdukScreen> {
             foregroundColor: Colors.red,
             padding: const EdgeInsets.symmetric(vertical: 20)),
         onPressed: () {
-          dialogProduk(context: context);
+          // dialogProduk(context: context);
+          scanBarcodeNormal();
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -273,7 +310,9 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     ),
                     IconButton(
                         padding: EdgeInsets.all(0),
-                        onPressed: () {},
+                        onPressed: () {
+                          scanBarcodeNormal();
+                        },
                         icon: const Icon(
                           Icons.document_scanner_outlined,
                           color: Colors.red,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
 
@@ -12,18 +14,58 @@ class TransaksiScreen extends StatefulWidget {
 }
 
 class _TransaksiScreenState extends State<TransaksiScreen> {
+  String _scanBarcode = "Unknows";
   String? chooseHarga;
   int item = 5;
   bool isSelected = false;
   bool isSearch = false;
   List<Item> _items = [];
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   setState(() {
+  //     _items = _generateItems();
+  //   });
+  // }
+
+  Future<void> scanBarcodeNormal() async {
+    String barcodeScanRes;
+    List<Item> data = [];
+    try {
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      print(barcodeScanRes);
+      data.add(Item(
+          id: int.parse(barcodeScanRes),
+          name: "Item Tet",
+          total: 1,
+          price: 1000,
+          totalPrice: 2000,
+          isSelected: false));
+      print(data);
+      // player.play('beep.mp3');
+    } on PlatformException {
+      barcodeScanRes = 'Failed to get platform version.';
+    }
+
+    if (!mounted) return;
+
     setState(() {
-      _items = _generateItems();
+      _items += data;
     });
+  }
+
+  Future<void> startBarcodeScanStream() async {
+    List data = [];
+    FlutterBarcodeScanner.getBarcodeStreamReceiver(
+            '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
+        .listen(
+      (barcode) {
+        // print(barcode);
+        data.add(barcode);
+      },
+    );
   }
 
   List<Item> _generateItems() {
@@ -42,7 +84,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appbarWidget(title: "Transaksi Baru"),
+      appBar: appbarWidget(title: "Transaksi Baru", context: context),
       drawer: const DrawerMain(),
       body: ListView(children: [
         Row(
@@ -222,7 +264,9 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           ButtonNavbar(
             title: "Scan Barang",
             icon: Icons.document_scanner_outlined,
-            onPressed: () {},
+            onPressed: () {
+              scanBarcodeNormal();
+            },
           ),
           const SizedBox(
             width: 10,
