@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kasir_online/provider/produk_provider.dart';
+import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/screen/sigin_screen.dart';
 import 'package:kasir_online/screen/signup_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ProdukProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

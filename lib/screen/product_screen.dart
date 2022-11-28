@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/model/product_model.dart';
+import 'package:kasir_online/provider/produk_provider.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
+import 'package:provider/provider.dart';
 
 class ProdukScreen extends StatefulWidget {
   const ProdukScreen({Key? key}) : super(key: key);
@@ -21,14 +23,14 @@ class _ProdukScreenState extends State<ProdukScreen> {
   String? choosenKey;
   bool isVisible = false;
   Produk? data = Produk(
-      kode: 12345678,
-      nama: "- Nama Produk -",
-      kategori: "none",
+      kodeProduk: "12345678",
+      namaProduk: "- Nama Produk -",
+      typeProduk: "none",
       isSelected: false);
   var kodeCtrl = TextEditingController();
   var namaCtrl = TextEditingController();
   var kategoriCtrl = TextEditingController();
-  final List<Produk> _items = [];
+  List<Produk> _items = [];
   List dropdownitem = [];
 
   @override
@@ -41,12 +43,6 @@ class _ProdukScreenState extends State<ProdukScreen> {
       dropdownitem = _generateDropdownKategori(_items);
     });
   }
-
-  // Future<void> startBarcodeScanStream() async {
-  //   FlutterBarcodeScanner.getBarcodeStreamReceiver(
-  //           '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
-  //       .listen((barcode) => print(barcode));
-  // }
 
   Future<void> scanBarcodeNormal() async {
     String barcodeScanRes;
@@ -69,24 +65,15 @@ class _ProdukScreenState extends State<ProdukScreen> {
   List _generateDropdownKategori(List<Produk> item) {
     return List.generate(_items.length, (index) {
       return {
-        'key': item[index].nama,
+        'key': item[index].namaProduk,
       };
-    });
-  }
-
-  List<Produk> _generateProduks() {
-    return List.generate(3, (int index) {
-      return Produk(
-        kode: index + 1,
-        nama: 'Nama Produk ${index + 1}',
-        kategori: "Makanan",
-        isSelected: false,
-      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    var produkProvider = Provider.of<ProdukProvider>(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: appbarWidget(title: "Produk", context: context),
@@ -114,16 +101,12 @@ class _ProdukScreenState extends State<ProdukScreen> {
                             children: [
                               Container(
                                 margin: const EdgeInsets.only(bottom: 15),
-                                child: Column(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        dropdownHarga(),
-                                        TotalItem(_items.length),
-                                      ],
-                                    )
+                                    dropdownkatakunci(produkProvider),
+                                    totalItem(produkProvider),
                                   ],
                                 ),
                               ),
@@ -164,7 +147,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                     ),
                                     Flexible(
                                       child: Text(
-                                        data!.nama,
+                                        data!.namaProduk!,
                                         style: Theme.of(context)
                                             .textTheme
                                             .headline1!
@@ -217,6 +200,102 @@ class _ProdukScreenState extends State<ProdukScreen> {
     );
   }
 
+  FutureBuilder<dynamic> totalItem(ProdukProvider produkProvider) {
+    return FutureBuilder(
+      future: produkProvider.getProduk(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+              // child: CircularProgressIndicator(),
+              );
+        } else {
+          return Row(
+            children: [
+              Text(
+                "Total Item : ",
+                style: Theme.of(context).textTheme.headline3,
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.grey, width: 2)),
+                child: Text(
+                  '${snapshot.data.length}',
+                  style: Theme.of(context).textTheme.headline3,
+                ),
+              )
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  FutureBuilder<dynamic> dropdownkatakunci(ProdukProvider produkProvider) {
+    return FutureBuilder(
+      future: produkProvider.getProduk(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+              // child: CircularProgressIndicator(),
+              );
+        } else {
+          List<Produk> data = snapshot.data;
+          List dataDropDown = [];
+          for (int i = 0; i < data.length; i++) {
+            dataDropDown.add(data[i].namaProduk);
+          }
+          dataDropDown = dataDropDown.toSet().toList();
+          print(dataDropDown);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Kata Kunci : ",
+                  style: Theme.of(context).textTheme.headline3),
+              Container(
+                width: 250,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey, width: 2)),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    hint: Text(
+                      "Nama Produk",
+                      style: Theme.of(context).textTheme.headline3,
+                    ),
+                    isExpanded: true,
+                    value: choosenKey,
+                    style: const TextStyle(color: Colors.white),
+                    iconEnabledColor: Colors.black,
+                    borderRadius: BorderRadius.circular(10),
+                    items: dataDropDown
+                        .map<DropdownMenuItem<String>>((item) =>
+                            DropdownMenuItem<String>(
+                                value: item.toString(),
+                                child: Text("$item",
+                                    style:
+                                        Theme.of(context).textTheme.headline3)))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        choosenKey = value;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
   ElevatedButton buttonAddProduct(BuildContext context) {
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
@@ -226,8 +305,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
             foregroundColor: Colors.red,
             padding: const EdgeInsets.symmetric(vertical: 20)),
         onPressed: () {
-          // dialogProduk(context: context);
-          scanBarcodeNormal();
+          dialogProduk(context: context);
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -247,9 +325,10 @@ class _ProdukScreenState extends State<ProdukScreen> {
         ));
   }
 
-  Future<dynamic> dialogProduk({BuildContext? context, Produk? item}) {
+  Future<dynamic> dialogProduk({required BuildContext context, Produk? item}) {
+    var produkProvider = Provider.of<ProdukProvider>(context, listen: false);
     return showDialog(
-        context: context!,
+        context: context,
         builder: (context) => AlertDialog(
               contentPadding: const EdgeInsets.all(100),
               content: SingleChildScrollView(
@@ -263,17 +342,17 @@ class _ProdukScreenState extends State<ProdukScreen> {
                         InputProduk(
                           title: "Kode Barang",
                           controller: kodeCtrl,
-                          item: item?.kode.toString() ?? '',
+                          item: item?.kodeProduk.toString() ?? '',
                         ),
                         InputProduk(
                           title: "Nama Barang",
                           controller: namaCtrl,
-                          item: item?.nama ?? '',
+                          item: item?.namaProduk ?? '',
                         ),
                         InputProduk(
                           title: "Kategori Barang",
                           controller: kategoriCtrl,
-                          item: item?.kategori ?? '',
+                          item: item?.typeProduk ?? '',
                         ),
                         const SizedBox(
                           height: 50,
@@ -283,19 +362,21 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 50, vertical: 10)),
                             onPressed: () {
-                              setState(() {
-                                _items.add(Produk(
-                                    kode: int.parse(kodeCtrl.text),
-                                    nama: namaCtrl.text,
-                                    kategori: kategoriCtrl.text,
-                                    isSelected: false));
-                                dropdownitem =
-                                    _generateDropdownKategori(_items);
-                              });
-                              kodeCtrl.clear();
-                              namaCtrl.clear();
-                              kategoriCtrl.clear();
-                              Navigator.pop(context);
+                              produkProvider.addProduk(kodeCtrl.text,
+                                  namaCtrl.text, kategoriCtrl.text, context);
+                              // setState(() {
+                              //   _items.add(Produk(
+                              //       kode: int.parse(kodeCtrl.text),
+                              //       nama: namaCtrl.text,
+                              //       kategori: kategoriCtrl.text,
+                              //       isSelected: false));
+                              //   dropdownitem =
+                              //       _generateDropdownKategori(_items);
+                              // });
+                              // kodeCtrl.clear();
+                              // namaCtrl.clear();
+                              // kategoriCtrl.clear();
+                              // Navigator.pop(context);
                             },
                             child: Row(
                               children: const [
@@ -309,7 +390,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                       ],
                     ),
                     IconButton(
-                        padding: EdgeInsets.all(0),
+                        padding: const EdgeInsets.all(0),
                         onPressed: () {
                           scanBarcodeNormal();
                         },
@@ -352,70 +433,41 @@ class _ProdukScreenState extends State<ProdukScreen> {
             ));
   }
 
-  Row dropdownHarga() {
-    if (dropdownitem.isEmpty) {
-      dropdownitem = [
-        {"key": "Belum ada Produk"}
-      ];
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text("Kata Kunci : ", style: Theme.of(context).textTheme.headline3),
-        Container(
-          width: 250,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey, width: 2)),
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              hint: Text(
-                "Nama Produk",
-                style: Theme.of(context).textTheme.headline3,
+  FutureBuilder<dynamic> dataTableTransaksi(BuildContext context) {
+    var produk = Provider.of<ProdukProvider>(context);
+    return FutureBuilder(
+      future: produk.getProduk(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          // print(snapshot.data);
+          // var dataProduk = snapshot.data;
+          _items = snapshot.data;
+          _generateDropdownKategori(_items);
+          return SizedBox(
+            height: MediaQuery.of(context).size.height / 1.4,
+            child: SingleChildScrollView(
+              child: DataTable(
+                showCheckboxColumn: false,
+                headingTextStyle: Theme.of(context)
+                    .textTheme
+                    .subtitle1!
+                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                headingRowColor: MaterialStateColor.resolveWith(
+                    (Set<MaterialState> states) =>
+                        Theme.of(context).primaryColor),
+                decoration: const BoxDecoration(color: Colors.white),
+                columns: _createColumns(),
+                rows: List<DataRow>.from(
+                    _items.map((item) => _createRow(item)).toList()),
               ),
-              isExpanded: true,
-              value: choosenKey,
-              style: const TextStyle(color: Colors.white),
-              iconEnabledColor: Colors.black,
-              borderRadius: BorderRadius.circular(10),
-              items: dropdownitem
-                  .map<DropdownMenuItem<String>>((item) =>
-                      DropdownMenuItem<String>(
-                          value: item.toString(),
-                          child: Text("${item['key']}",
-                              style: Theme.of(context).textTheme.headline3)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  choosenKey = value;
-                });
-              },
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  SizedBox dataTableTransaksi(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height / 1.4,
-      child: SingleChildScrollView(
-        child: DataTable(
-          showCheckboxColumn: false,
-          headingTextStyle: Theme.of(context)
-              .textTheme
-              .subtitle1!
-              .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-          headingRowColor: MaterialStateColor.resolveWith(
-              (Set<MaterialState> states) => Theme.of(context).primaryColor),
-          decoration: const BoxDecoration(color: Colors.white),
-          columns: _createColumns(),
-          rows: _items.map((item) => _createRow(item)).toList(),
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 
@@ -423,7 +475,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
     return [
       const DataColumn(
         label: Text('Kode'),
-        numeric: true,
+        numeric: false,
       ),
       const DataColumn(
         label: Text('Nama Barang'),
@@ -441,8 +493,8 @@ class _ProdukScreenState extends State<ProdukScreen> {
   DataRow _createRow(Produk item) {
     return DataRow(
       // index: item.id, // for DataRow.byIndex
-      key: ValueKey(item.kode),
-      selected: item.isSelected,
+      key: ValueKey(item.id),
+      selected: item.isSelected!,
       onSelectChanged: (bool? isSelected) {
         if (isSelected != null) {
           item.isSelected = isSelected;
@@ -465,13 +517,13 @@ class _ProdukScreenState extends State<ProdukScreen> {
       cells: [
         DataCell(
           Text(
-            item.kode.toString(),
+            item.kodeProduk!,
             style: Theme.of(context).textTheme.subtitle1,
           ),
         ),
         DataCell(
           Text(
-            item.nama,
+            item.namaProduk!,
             style: Theme.of(context).textTheme.subtitle1,
           ),
           placeholder: false,
@@ -481,7 +533,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
           },
         ),
         DataCell(Text(
-          item.kategori.toString(),
+          item.typeProduk!,
           style: Theme.of(context).textTheme.subtitle1,
         )),
       ],
@@ -552,34 +604,6 @@ class HargaItem extends StatelessWidget {
               harga!,
               style: Theme.of(context).textTheme.headline3,
             ),
-          ),
-        )
-      ],
-    );
-  }
-}
-
-class TotalItem extends StatelessWidget {
-  int items;
-  TotalItem(this.items);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          "Total Item : ",
-          style: Theme.of(context).textTheme.headline3,
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: Colors.grey, width: 2)),
-          child: Text(
-            items.toString(),
-            style: Theme.of(context).textTheme.headline3,
           ),
         )
       ],

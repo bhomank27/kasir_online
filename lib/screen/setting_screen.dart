@@ -40,9 +40,29 @@ class SettingScreen extends StatelessWidget {
                 title: "Login Pengguna",
                 iconData: Icons.login,
               ),
-              ButtonSetting(
-                title: "Keluar",
-                iconData: Icons.logout,
+              InkWell(
+                onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          content: Text("Yakin Keluar ?"),
+                          actions: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamedAndRemoveUntil(
+                                      context, '/', (route) => false);
+                                },
+                                child: Text("Ya")),
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Tidak")),
+                          ],
+                        )),
+                child: ButtonSetting(
+                  title: "Keluar",
+                  iconData: Icons.logout,
+                ),
               ),
             ],
           ),

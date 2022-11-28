@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
+import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -11,14 +13,14 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   bool isObsecure = true;
+  bool isObsecure2 = true;
+  TextEditingController nameCtrl = TextEditingController();
+  TextEditingController emailCtrl = TextEditingController();
+  TextEditingController passCtrl = TextEditingController();
+  TextEditingController passConfirmCtrl = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    // final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    TextEditingController nameCtrl = TextEditingController();
-    TextEditingController emailCtrl = TextEditingController();
-    TextEditingController passCtrl = TextEditingController();
-
-    // var formKey = GlobalKey<FormState>();
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
     return Scaffold(
         body: SafeArea(
       child: SingleChildScrollView(
@@ -111,6 +113,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ? Icons.visibility
                                       : Icons.visibility_off))
                             ],
+                          ),
+                          InputSignup(
+                            title: "Konfirmasi Kata Sandi",
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: passConfirmCtrl,
+                                  style: theme.textTheme.headline3,
+                                  obscureText: isObsecure,
+                                  decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText:
+                                          "Silahkan Isi Konfirmasi Password"),
+                                ),
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isObsecure2 = !isObsecure2;
+                                    });
+                                  },
+                                  icon: Icon(isObsecure2
+                                      ? Icons.visibility
+                                      : Icons.visibility_off))
+                            ],
                           )
                         ],
                       ),
@@ -138,11 +165,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               padding:
                                   const EdgeInsets.symmetric(vertical: 20)),
                           onPressed: () {
-                            print(nameCtrl.text);
-                            print(emailCtrl.text);
-                            print(passCtrl.text);
-                            Navigator.pushNamedAndRemoveUntil(
-                                context, '/dashboard', (route) => false);
+                            // userProvider.signUp(
+                            //   context,
+                            //   nameCtrl.text,
+                            //   emailCtrl.text,
+                            //   passCtrl.text,
+                            //   passConfirmCtrl.text,
+                            // );
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DashboarScreen()));
                           },
                           child: Text(
                             "Daftar",
@@ -176,7 +209,7 @@ class InputSignup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 20),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

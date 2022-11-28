@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kasir_online/screen/dataTransaksi_screen.dart';
 import 'package:kasir_online/screen/product_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
-import 'package:kasir_online/screen/transaction.dart';
+import 'package:kasir_online/screen/stok_screen.dart';
+import 'package:kasir_online/screen/transaction_screen.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -16,7 +17,8 @@ class DashboarScreen extends StatefulWidget {
   State<DashboarScreen> createState() => _DashboarScreenState();
 }
 
-class _DashboarScreenState extends State<DashboarScreen> {
+class _DashboarScreenState extends State<DashboarScreen>
+    with TickerProviderStateMixin {
   bool isVisible = false;
   DateTime? today;
 
@@ -93,6 +95,8 @@ class _DashboarScreenState extends State<DashboarScreen> {
                       isVisible = true;
                       return isSameDay(day, today);
                     }),
+                    calendarBuilders: CalendarBuilders(
+                        holidayBuilder: ((context, day, focusedDay) {})),
                     onHeaderTapped: ((_) {
                       setState(() {
                         today = DateTime.now();
@@ -227,6 +231,8 @@ class subNavbar extends StatelessWidget {
         ButtonDashboard(
           title: "Stok Barang",
           icon: "stok_barang.png",
+          ontap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const StokScreen())),
         ),
         ButtonDashboard(
           title: "Laporan",

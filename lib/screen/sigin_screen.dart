@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
+import 'package:provider/provider.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
@@ -11,13 +13,11 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool isObsecure = true;
+  TextEditingController emailCtrl = TextEditingController();
+  TextEditingController passCtrl = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    // final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    TextEditingController emailCtrl = TextEditingController();
-    TextEditingController passCtrl = TextEditingController();
-
-    // var formKey = GlobalKey<FormState>();
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
     return Scaffold(
         body: SafeArea(
       child: SingleChildScrollView(
@@ -124,10 +124,8 @@ class _SignInScreenState extends State<SignInScreen> {
                               padding:
                                   const EdgeInsets.symmetric(vertical: 20)),
                           onPressed: () {
-                            print(emailCtrl.text);
-                            print(passCtrl.text);
-                            Navigator.pushNamedAndRemoveUntil(
-                                context, '/dashboard', (route) => false);
+                            userProvider.login(
+                                context, emailCtrl.text, passCtrl.text);
                           },
                           child: Text(
                             "Masuk",

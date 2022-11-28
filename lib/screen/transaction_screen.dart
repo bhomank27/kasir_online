@@ -21,13 +21,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   bool isSearch = false;
   List<Item> _items = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   setState(() {
-  //     _items = _generateItems();
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _items = _generateItems();
+    });
+  }
 
   Future<void> scanBarcodeNormal() async {
     String barcodeScanRes;
@@ -36,13 +36,15 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
-      data.add(Item(
-          id: int.parse(barcodeScanRes),
-          name: "Item Tet",
-          total: 1,
-          price: 1000,
-          totalPrice: 2000,
-          isSelected: false));
+      if (barcodeScanRes != '-1') {
+        data.add(Item(
+            id: int.parse(barcodeScanRes),
+            name: "Item Tet",
+            total: 1,
+            price: 1000,
+            totalPrice: 2000,
+            isSelected: false));
+      }
       print(data);
       // player.play('beep.mp3');
     } on PlatformException {
@@ -69,7 +71,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   List<Item> _generateItems() {
-    return List.generate(10, (int index) {
+    return List.generate(20, (int index) {
       return Item(
         id: index + 2,
         name: 'Item ${index + 1}',
