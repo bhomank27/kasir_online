@@ -1,8 +1,14 @@
+import 'dart:async';
+
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
+import 'package:sizer/sizer.dart';
 
 import '../model/item_model.dart';
 
@@ -14,19 +20,30 @@ class TransaksiScreen extends StatefulWidget {
 }
 
 class _TransaksiScreenState extends State<TransaksiScreen> {
+  Size? size;
   String _scanBarcode = "Unknows";
+  Item selected = Item(
+    name: " Tambah Produk",
+  );
   String? chooseHarga;
   int item = 5;
   bool isSelected = false;
   bool isSearch = false;
+  double total = 0;
+  int kembali = 0;
   List<Item> _items = [];
+  FloatingActionButtonLocation? position =
+      FloatingActionButtonLocation.endFloat;
+  ScrollController scrollController = ScrollController();
+  var tunaiCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _items = _generateItems();
-    });
+    handleScroll();
+    // setState(() {
+    //   _items = _generateItems();
+    // });
   }
 
   Future<void> scanBarcodeNormal() async {
@@ -71,24 +88,86 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   List<Item> _generateItems() {
-    return List.generate(20, (int index) {
+    return List.generate(_items.length, (int index) {
       return Item(
-        id: index + 2,
-        name: 'Item ${index + 1}',
-        price: (index + 1) * 1000.00,
-        total: 2,
-        totalPrice: 2000,
-        isSelected: false,
+        id: _items[index].id,
+        name: _items[index].name,
+        price: _items[index].price,
+        total: _items[index].total,
+        totalPrice: _items[index].totalPrice,
+        isSelected: _items[index].isSelected,
+      );
+    });
+  }
+
+  kembaliFunc() {
+    if (tunaiCtrl.text == '') {
+      return 0;
+    } else {
+      return total - int.parse(tunaiCtrl.text);
+    }
+  }
+
+  void changePosition(FloatingActionButtonLocation values) {
+    setState(() {
+      position = values;
+    });
+  }
+
+  void handleScroll() async {
+    scrollController.addListener(() {
+      if (scrollController.offset > 300) {
+        changePosition(FloatingActionButtonLocation.startFloat);
+      }
+      if (scrollController.offset == 0) {
+        changePosition(FloatingActionButtonLocation.endFloat);
+      }
+    });
+  }
+
+  void scrollBottom(height) {
+    scrollController.animateTo(height,
+        duration: const Duration(seconds: 1), curve: Curves.fastOutSlowIn);
+  }
+
+  void scrollTop() {
+    scrollController.animateTo(0,
+        duration: const Duration(seconds: 1), curve: Curves.fastOutSlowIn);
+  }
+
+  void clear() {
+    setState(() {
+      total = 0;
+      tunaiCtrl.clear();
+      kembali = 0;
+      _items.clear();
+      selected = Item(
+        name: " Tambah Produk",
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    size = MediaQuery.of(context).size;
+
     return Scaffold(
+      floatingActionButtonLocation: position,
       appBar: appbarWidget(title: "Transaksi Baru", context: context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (scrollController.offset == 0) {
+            scrollBottom(size!.height);
+          } else {
+            scrollTop();
+          }
+        },
+        child: position == FloatingActionButtonLocation.endFloat
+            ? const Text("Bayar")
+            : const Icon(Icons.arrow_upward_rounded),
+      ),
       drawer: const DrawerMain(),
-      body: ListView(children: [
+      body: ListView(controller: scrollController, children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,33 +193,53 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                       dataTableTransaksi(context),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          const ButtonTambahItem(),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Total(
                                 title: "Grand Total",
-                                child: Text("Rp 2.000.000.000",
+                                child: Text("Rp $total",
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headline3!
+                                        .subtitle1!
                                         .copyWith(fontWeight: FontWeight.bold)),
                               ),
-                              Total(title: "Tunai", child: TextFormField()),
+                              Total(
+                                  title: "Tunai",
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Rp ",
+                                        style: theme.textTheme.subtitle1!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold),
+                                      ),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: tunaiCtrl,
+                                          textAlign: TextAlign.center,
+                                          style: theme.textTheme.subtitle1!
+                                              .copyWith(
+                                                  fontWeight: FontWeight.bold),
+                                          decoration: const InputDecoration(),
+                                        ),
+                                      )
+                                    ],
+                                  )),
                               Total(
                                   title: "Kembali",
-                                  child: Text("Rp. 9000000",
+                                  child: Text("Rp. ${kembaliFunc()}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline3!
+                                          .subtitle1!
                                           .copyWith(
                                               fontWeight: FontWeight.bold))),
                               const SizedBox(
                                 height: 10,
                               ),
-                              const ButtomBayar(),
+                              buttonBayar(context)
                             ],
                           ),
                         ],
@@ -148,19 +247,92 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                     ],
                   ),
                 )),
-            const BonTransaksi(),
+            // const BonTransaksi(),
           ],
         )
       ]),
     );
   }
 
+  SizedBox buttonBayar(BuildContext context) {
+    return SizedBox(
+      width: 100.w,
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
+          onPressed: () {
+            if (tunaiCtrl.text == '') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Selesaikan Transaksi")));
+            } else if (int.parse(tunaiCtrl.text) < total) {
+              showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: Text("Uang Tunai Kurang dari Grand Total"),
+                        content: Text("Lanjutkan?"),
+                        actions: [
+                          ElevatedButton(
+                              onPressed: () {
+                                loading(context);
+                                Timer(const Duration(seconds: 2), () {
+                                  clear();
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text("Transaksi Berhasil")));
+                                  scrollTop();
+                                });
+                              },
+                              child: Text("Ya")),
+                          ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Tidak"))
+                        ],
+                      ));
+            } else {
+              loading(context);
+              Timer(const Duration(seconds: 2), () {
+                clear();
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Transaksi Berhasil")));
+                scrollTop();
+              });
+            }
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.attach_money),
+              const SizedBox(
+                width: 50,
+              ),
+              Text(
+                "Bayar",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle1!
+                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ],
+          )),
+    );
+  }
+
+  Future<dynamic> loading(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) => const Center(
+                child: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: CircularProgressIndicator.adaptive(),
+            )));
+  }
+
   List<DataColumn> _createColumns() {
     return [
-      const DataColumn(
-        label: Text('No'),
-        numeric: true,
-      ),
       const DataColumn(
         label: Text('Nama Barang'),
         numeric: false,
@@ -188,9 +360,10 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     return DataRow(
       // index: item.id, // for DataRow.byIndex
       key: ValueKey(item.id),
-      selected: item.isSelected,
+      selected: item.isSelected!,
       onSelectChanged: (bool? isSelected) {
         if (isSelected != null) {
+          print(item.isSelected);
           item.isSelected = isSelected;
 
           setState(() {});
@@ -203,28 +376,43 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       cells: [
         DataCell(
           Text(
-            item.id.toString(),
+            item.name!,
             style: Theme.of(context).textTheme.subtitle1,
           ),
         ),
-        DataCell(
-          Text(
-            item.name,
-            style: Theme.of(context).textTheme.subtitle1,
-          ),
-          placeholder: false,
-          showEditIcon: true,
-          onTap: () {
-            print('onTap');
-          },
-        ),
-        DataCell(Text(
-          item.total.toString(),
-          style: Theme.of(context).textTheme.subtitle1,
+        DataCell(Row(
+          children: [
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    total = total + item.totalPrice!;
+                    item.total = item.total! + 1;
+                    item.totalPrice = item.total! * item.price!;
+                  });
+                },
+                icon: const Icon(Icons.arrow_drop_up_outlined)),
+            Text(
+              item.total.toString(),
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            IconButton(
+                onPressed: () {
+                  if (item.total! <= 1) {
+                    setState(() {
+                      _items.removeWhere((element) => element.id == item.id);
+                    });
+                  } else {
+                    setState(() {
+                      item.total = item.total! - 1;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.arrow_drop_down_outlined)),
+          ],
         )),
         DataCell(
           Text(
-            item.price.toString(),
+            "${item.price}",
             style: Theme.of(context).textTheme.subtitle1,
           ),
         ),
@@ -240,7 +428,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   SizedBox dataTableTransaksi(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 2.5,
+      height: MediaQuery.of(context).size.height * 0.7,
       child: SingleChildScrollView(
         child: DataTable(
           showCheckboxColumn: false,
@@ -259,38 +447,93 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   Visibility navbarMain() {
+    List<Item> datas = [
+      Item(
+          id: 1,
+          name: "Kecap ABC",
+          total: 1,
+          price: 2000,
+          totalPrice: 2000,
+          isSelected: false),
+      Item(
+          id: 2,
+          name: "SUSU Indomilk",
+          total: 1,
+          price: 2500,
+          totalPrice: 2500,
+          isSelected: false),
+      Item(
+          id: 3,
+          name: "Indomie",
+          total: 1,
+          price: 3000,
+          totalPrice: 3000,
+          isSelected: false),
+    ];
     return Visibility(
       visible: !isSearch,
-      child: Row(
-        children: [
-          ButtonNavbar(
-            title: "Scan Barang",
-            icon: Icons.document_scanner_outlined,
-            onPressed: () {
-              scanBarcodeNormal();
-            },
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          ButtonNavbar(
-            title: "Cari",
-            icon: Icons.search,
-            onPressed: () {
-              setState(() {
-                isSearch = true;
-              });
-            },
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          ButtonNavbar(
-            title: "Refresh",
-            icon: Icons.refresh,
-            onPressed: () {},
-          ),
-        ],
+      child: Expanded(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Card(
+                margin: EdgeInsets.symmetric(horizontal: 1.5.w),
+                color: Colors.white,
+                child: DropdownSearch<Item>(
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    textAlignVertical: TextAlignVertical.center,
+                    dropdownSearchDecoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 2.w, vertical: 2.w)),
+                  ),
+                  popupProps: PopupProps.dialog(
+                      fit: FlexFit.loose,
+                      showSearchBox: true,
+                      itemBuilder: ((context, item, isSelected) => ListTile(
+                            title: Text(item.name!),
+                          ))),
+                  items: datas,
+                  onChanged: ((value) {
+                    if (_items.any((element) => element.id == value!.id)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Produk Sudah Ada")));
+                    } else {
+                      total = total + value!.price!;
+                      _items.add(value);
+                      setState(() {
+                        _generateItems();
+                      });
+                    }
+                  }),
+                  dropdownBuilder: ((context, selectedItem) => Text(
+                        selectedItem?.name ?? 'Tambah Produk',
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.subtitle1,
+                      )),
+                  selectedItem: selected,
+                ),
+              ),
+            ),
+            ButtonNavbar(
+              title: "Scan Barang",
+              icon: Icons.document_scanner_outlined,
+              onPressed: () {
+                scanBarcodeNormal();
+              },
+            ),
+            ButtonNavbar(
+              title: "Cari",
+              icon: Icons.search,
+              onPressed: () {
+                setState(() {
+                  isSearch = true;
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -306,13 +549,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                SizedBox(
-                    width: 400,
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Silahkan Cari .."),
-                    )),
+                Expanded(
+                  child: SizedBox(
+                      child: TextFormField(
+                    decoration: const InputDecoration(
+                        border: InputBorder.none, hintText: "Silahkan Cari .."),
+                  )),
+                ),
                 Icon(
                   Icons.search,
                   color: Theme.of(context).primaryColor,
@@ -333,76 +576,49 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         ));
   }
 
-  Row dropdownHarga() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text("Harga : ",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Container(
-          width: 250,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              hint: const Text("Pilih Harga"),
-              isExpanded: true,
-              value: chooseHarga,
-              style: const TextStyle(color: Colors.white),
-              iconEnabledColor: Colors.black,
-              items: [
-                {"key": "Umum"},
-                {"key": "warungan"}
-              ]
-                  .map<DropdownMenuItem<String>>((item) =>
-                      DropdownMenuItem<String>(
-                          value: item.toString(),
-                          child: Text("${item['key']}",
-                              style: const TextStyle(color: Colors.black))))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  chooseHarga = value;
-                });
-              },
+  Widget dropdownHarga() {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Container(
+              width: 200,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  hint: Text(
+                    "Pilih Harga",
+                    style: theme.textTheme.subtitle1,
+                  ),
+                  isExpanded: true,
+                  value: chooseHarga,
+                  style: const TextStyle(color: Colors.white),
+                  iconEnabledColor: Colors.black,
+                  items: [
+                    {"key": "Umum"},
+                    {"key": "warungan"}
+                  ]
+                      .map<DropdownMenuItem<String>>((item) =>
+                          DropdownMenuItem<String>(
+                              value: item.toString(),
+                              child: Text("${item['key']}",
+                                  style: const TextStyle(color: Colors.black))))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      chooseHarga = value;
+                    });
+                  },
+                ),
+              ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class ButtomBayar extends StatelessWidget {
-  const ButtomBayar({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 370,
-      child: ElevatedButton(
-          style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
-          onPressed: () {},
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.attach_money),
-              const SizedBox(
-                width: 50,
-              ),
-              Text(
-                "Bayar",
-                style: Theme.of(context)
-                    .textTheme
-                    .headline3!
-                    .copyWith(color: Colors.white),
-              ),
-            ],
-          )),
+        ],
+      ),
     );
   }
 }
@@ -435,15 +651,15 @@ class Total extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         SizedBox(
-          width: 150,
+          width: 30.w,
           child: Text(title!,
               style: Theme.of(context)
                   .textTheme
-                  .headline3!
+                  .subtitle1!
                   .copyWith(fontWeight: FontWeight.bold)),
         ),
         Container(
-          width: 200,
+          width: 60.w,
           margin: const EdgeInsets.all(10),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -453,6 +669,35 @@ class Total extends StatelessWidget {
             child: child,
           ),
         )
+      ],
+    );
+  }
+}
+
+class InputProduk extends StatelessWidget {
+  String? title;
+  TextEditingController? controller;
+  String? item;
+  InputProduk({Key? key, this.title, this.controller, this.item})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 200,
+          child: Text(
+            title!,
+            style: Theme.of(context).textTheme.headline3,
+          ),
+        ),
+        SizedBox(
+            width: 300,
+            child: TextFormField(
+              controller: controller,
+              decoration: InputDecoration(hintText: item ?? ""),
+            ))
       ],
     );
   }
@@ -471,21 +716,25 @@ class ButtonNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            minimumSize: const Size(150, 50), backgroundColor: Colors.white),
-        onPressed: onPressed,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(
-              icon,
-              color: Theme.of(context).primaryColor,
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 1.5.w),
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              minimumSize: const Size(150, 50), backgroundColor: Colors.white),
+          onPressed: onPressed,
+          child: FittedBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  icon,
+                  color: Theme.of(context).primaryColor,
+                ),
+                Text(title!, style: theme.textTheme.subtitle1)
+              ],
             ),
-            Text(title!,
-                style: TextStyle(color: Theme.of(context).primaryColor))
-          ],
-        ));
+          )),
+    );
   }
 }
 

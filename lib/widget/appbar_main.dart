@@ -6,7 +6,7 @@ PreferredSizeWidget? appbarWidget({String? title, BuildContext? context}) {
     toolbarHeight: 70,
     title: Text(
       title ?? "",
-      style: TextStyle(fontSize: 24),
+      style: TextStyle(fontSize: 20),
     ),
     elevation: 0,
     actions: [

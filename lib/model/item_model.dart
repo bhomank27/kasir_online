@@ -1,17 +1,17 @@
 class Item {
   Item({
-    required this.id,
-    required this.name,
-    required this.total,
-    required this.price,
-    required this.totalPrice,
-    required this.isSelected,
+    this.id,
+    this.name,
+    this.total,
+    this.price,
+    this.totalPrice,
+    this.isSelected,
   });
 
-  int id;
-  String name;
-  int total;
-  double price;
-  int totalPrice;
-  bool isSelected;
+  int? id;
+  String? name;
+  int? total;
+  double? price;
+  double? totalPrice;
+  bool? isSelected;
 }

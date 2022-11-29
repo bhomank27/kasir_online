@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:kasir_online/screen/dataTransaksi_screen.dart';
 import 'package:kasir_online/screen/product_screen.dart';
@@ -36,6 +38,9 @@ class _DashboarScreenState extends State<DashboarScreen>
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var style = Theme.of(context).textTheme;
+    // var appbar = appbarWidget();
+    // double heigthQuery = appbar!.preferredSize.height - size.height;
+
     return Scaffold(
       appBar: appbarWidget(context: context),
       drawer: const DrawerMain(),
@@ -43,7 +48,7 @@ class _DashboarScreenState extends State<DashboarScreen>
         child: Stack(children: [
           Container(
             color: Theme.of(context).primaryColor,
-            height: size.height / 5,
+            height: size.height * 0.4,
             width: size.width,
           ),
           Padding(
@@ -71,13 +76,16 @@ class _DashboarScreenState extends State<DashboarScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child:
-                    Text("Kalender Penjualan", style: TextStyle(fontSize: 20)),
+              FittedBox(
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Kalender Penjualan",
+                  ),
+                ),
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height / 2,
+                height: MediaQuery.of(context).size.height * 0.9,
                 child: Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -127,22 +135,25 @@ class _DashboarScreenState extends State<DashboarScreen>
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
-                      style: TextStyle(fontSize: 20)),
-                  IconButton(
-                      onPressed: () {
-                        setState(() {
-                          isVisible = false;
-                        });
-                      },
-                      icon: const Icon(Icons.close)),
-                ],
+              FittedBox(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          setState(() {
+                            isVisible = false;
+                          });
+                        },
+                        icon: const Icon(Icons.close)),
+                  ],
+                ),
               ),
               Container(
-                height: MediaQuery.of(context).size.height / 2.1,
+                height: MediaQuery.of(context).size.height * 0.9,
                 child: ListView.builder(
                     itemBuilder: (context, builder) => const SizedBox(
                           width: double.infinity,
@@ -167,41 +178,45 @@ class _DashboarScreenState extends State<DashboarScreen>
 }
 
 class NavbarMain extends StatelessWidget {
-  const NavbarMain({
+  NavbarMain({
     Key? key,
     required this.size,
     required this.style,
   }) : super(key: key);
 
-  final Size size;
+  var size;
   final TextTheme style;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: size.height / 9,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(7.0),
-          child: GestureDetector(
-            onTap: (() => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const TransaksiScreen()))),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  "assets/icon/transaksi.png",
-                  height: 50,
-                  color: Theme.of(context).primaryColor,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) => Container(
+        height: size.height * 0.2,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.white,
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(7.0),
+            child: GestureDetector(
+              onTap: (() => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const TransaksiScreen()))),
+              child: FittedBox(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/icon/transaksi.png",
+                      // height: 50,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    Text("Transaksi Baru",
+                        style: style.headline2!
+                            .copyWith(color: Theme.of(context).primaryColor))
+                  ],
                 ),
-                Text("Transaksi Baru",
-                    style: style.headline2!
-                        .copyWith(color: Theme.of(context).primaryColor))
-              ],
+              ),
             ),
           ),
         ),
@@ -217,8 +232,11 @@ class subNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GridView(
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5, mainAxisExtent: 120),
+      shrinkWrap: true,
       children: [
         ButtonDashboard(
           title: "Retur Penjualan",
@@ -264,31 +282,27 @@ class ButtonDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var style = Theme.of(context).textTheme;
-    return Expanded(
-      child: GestureDetector(
-        onTap: ontap ?? () {},
-        child: SizedBox(
-          width: 250,
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: const EdgeInsets.all(15.0),
-            child: Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/icon/$icon",
-                    height: 50,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  Text(title!,
-                      style: style.headline2!
-                          .copyWith(color: Theme.of(context).primaryColor))
-                ],
-              ),
+    return GestureDetector(
+      onTap: ontap ?? () {},
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12.0),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: FittedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  "assets/icon/$icon",
+                  color: Theme.of(context).primaryColor,
+                  // height: 50,
+                ),
+                Text(title!,
+                    style: style.headline2!
+                        .copyWith(color: Theme.of(context).primaryColor))
+              ],
             ),
           ),
         ),
