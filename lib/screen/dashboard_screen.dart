@@ -1,11 +1,14 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/screen/dataTransaksi_screen.dart';
 import 'package:kasir_online/screen/product_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
 import 'package:kasir_online/screen/stok_screen.dart';
 import 'package:kasir_online/screen/transaction_screen.dart';
+import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +26,14 @@ class _DashboarScreenState extends State<DashboarScreen>
     with TickerProviderStateMixin {
   bool isVisible = false;
   DateTime? today;
+  bool isAppbar = true;
+  ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    handleScroll();
+  }
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
@@ -34,21 +45,37 @@ class _DashboarScreenState extends State<DashboarScreen>
     return DateFormat("dd-MM-yyyy").format(date);
   }
 
+  void visibleAppbar(values) {
+    setState(() {
+      isAppbar = values;
+    });
+  }
+
+  void handleScroll() async {
+    scrollController.addListener(() {
+      if (scrollController.offset > 100) {
+        visibleAppbar(false);
+      } else if (scrollController.offset == 0) {
+        visibleAppbar(true);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var style = Theme.of(context).textTheme;
-    // var appbar = appbarWidget();
-    // double heigthQuery = appbar!.preferredSize.height - size.height;
+    SizeConfig().init(context);
 
     return Scaffold(
-      appBar: appbarWidget(context: context),
+      appBar: isAppbar ? appbarWidget(context: context) : null,
       drawer: const DrawerMain(),
       body: SingleChildScrollView(
+        controller: scrollController,
         child: Stack(children: [
           Container(
             color: Theme.of(context).primaryColor,
-            height: size.height * 0.4,
+            height: SizeConfig.screenHeight! * 0.34,
             width: size.width,
           ),
           Padding(
@@ -76,16 +103,17 @@ class _DashboarScreenState extends State<DashboarScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FittedBox(
-                child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Kalender Penjualan",
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Kalender Penjualan",
+                  style: TextStyle(
+                    fontSize: SizeConfig.safeBlockHorizontal! * 2,
                   ),
                 ),
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.9,
+                height: SizeConfig.screenHeight! * 0.5,
                 child: Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -116,7 +144,7 @@ class _DashboarScreenState extends State<DashboarScreen>
                         titleCentered: true,
                         titleTextStyle: TextStyle(
                             color: Theme.of(context).primaryColor,
-                            fontSize: 24,
+                            fontSize: SizeConfig.safeBlockHorizontal! * 2,
                             fontWeight: FontWeight.bold)),
                     availableGestures: AvailableGestures.all,
                     focusedDay: today ?? DateTime.now(),
@@ -135,40 +163,37 @@ class _DashboarScreenState extends State<DashboarScreen>
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FittedBox(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Hasil Penjualan ${dateFormat(today ?? DateTime.now())}",
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Hasil Penjualan ",
+                    style: TextStyle(
+                        fontSize: SizeConfig.safeBlockHorizontal! * 2),
+                  ),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isVisible = false;
+                        });
+                      },
+                      icon: const Icon(Icons.close)),
+                ],
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(15.0),
+                    child: Text(
+                      "Rp.12.000",
+                      style: TextStyle(
+                          fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                          fontWeight: FontWeight.bold),
                     ),
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isVisible = false;
-                          });
-                        },
-                        icon: const Icon(Icons.close)),
-                  ],
+                  ),
                 ),
               ),
-              Container(
-                height: MediaQuery.of(context).size.height * 0.9,
-                child: ListView.builder(
-                    itemBuilder: (context, builder) => const SizedBox(
-                          width: double.infinity,
-                          child: Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(15.0),
-                              child: Text(
-                                "Rp.12.000",
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                        )),
-              )
             ],
           )),
         )
@@ -202,18 +227,23 @@ class NavbarMain extends StatelessWidget {
             child: GestureDetector(
               onTap: (() => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => const TransaksiScreen()))),
-              child: FittedBox(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
                       "assets/icon/transaksi.png",
-                      // height: 50,
+                      height: SizeConfig.safeBlockHorizontal! * 4,
                       color: Theme.of(context).primaryColor,
                     ),
+                    SizedBox(
+                      height: SizeConfig.safeBlockVertical! * 1,
+                    ),
                     Text("Transaksi Baru",
-                        style: style.headline2!
-                            .copyWith(color: Theme.of(context).primaryColor))
+                        style: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                            fontWeight: FontWeight.bold,
+                            color: theme.primaryColor))
                   ],
                 ),
               ),
@@ -232,10 +262,11 @@ class subNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return GridView(
       physics: NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5, mainAxisExtent: 120),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5, mainAxisExtent: SizeConfig.screenHeight! * 0.2),
       shrinkWrap: true,
       children: [
         ButtonDashboard(
@@ -281,29 +312,35 @@ class ButtonDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     var style = Theme.of(context).textTheme;
     return GestureDetector(
       onTap: ontap ?? () {},
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: FittedBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  "assets/icon/$icon",
-                  color: Theme.of(context).primaryColor,
-                  // height: 50,
-                ),
-                Text(title!,
-                    style: style.headline2!
-                        .copyWith(color: Theme.of(context).primaryColor))
-              ],
-            ),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                "assets/icon/$icon",
+                height: SizeConfig.safeBlockHorizontal! * 4,
+                // height: 50,
+              ),
+              SizedBox(
+                height: SizeConfig.safeBlockVertical! * 1,
+              ),
+              Text(
+                title!,
+                style: TextStyle(
+                    fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor),
+                textAlign: TextAlign.center,
+              )
+            ],
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
@@ -18,28 +19,23 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context, listen: false);
+    SizeConfig().init(context);
     return Scaffold(
         body: SafeArea(
       child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
         child: Row(
           children: [
             Expanded(
-                flex: 2,
-                child: Stack(
-                  children: [
-                    Image.asset(
-                      "assets/bg2.png",
-                      scale: 1.17,
-                    ),
-                    Image.asset(
-                      "assets/bg.png",
-                      scale: 1.17,
-                    )
-                  ],
+                flex: 1,
+                child: SizedBox(
+                  height: SizeConfig.screenHeight!,
+                  child: Image.asset(
+                    "assets/bg.png",
+                    fit: BoxFit.cover,
+                  ),
                 )),
             Expanded(
-                flex: 3,
+                flex: 2,
                 child: Container(
                   margin: const EdgeInsets.all(50),
                   child: Column(
@@ -50,9 +46,14 @@ class _SignInScreenState extends State<SignInScreen> {
                         children: [
                           Text(
                             "Masuk Akun",
-                            style: Theme.of(context).textTheme.headline1,
+                            style: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                                fontWeight: FontWeight.bold),
                           ),
-                          const Text("Silahkan Masukan Akun Anda"),
+                          Text("Silahkan Masukan Akun Anda",
+                              style: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                              )),
                         ],
                       ),
                       Column(
@@ -61,11 +62,21 @@ class _SignInScreenState extends State<SignInScreen> {
                           InputSignup(
                             title: "Email",
                             children: [
+                              SizedBox(
+                                width: SizeConfig.screenWidth! * 0.015,
+                              ),
                               Expanded(
                                 child: TextFormField(
                                   controller: emailCtrl,
-                                  style: theme.textTheme.headline3,
-                                  decoration: const InputDecoration(
+                                  style: TextStyle(
+                                    fontSize:
+                                        SizeConfig.safeBlockHorizontal! * 1.5,
+                                  ),
+                                  decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical:
+                                              SizeConfig.screenHeight! * 0.03),
+                                      isDense: true,
                                       border: InputBorder.none,
                                       hintText: "Silahkan Isi Email"),
                                 ),
@@ -75,12 +86,22 @@ class _SignInScreenState extends State<SignInScreen> {
                           InputSignup(
                             title: "Kata Sandi",
                             children: [
+                              SizedBox(
+                                width: SizeConfig.screenWidth! * 0.015,
+                              ),
                               Expanded(
                                 child: TextFormField(
                                   controller: passCtrl,
-                                  style: theme.textTheme.headline3,
+                                  style: TextStyle(
+                                    fontSize:
+                                        SizeConfig.safeBlockHorizontal! * 1.5,
+                                  ),
                                   obscureText: isObsecure,
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical:
+                                              SizeConfig.screenHeight! * 0.03),
+                                      isDense: true,
                                       border: InputBorder.none,
                                       hintText:
                                           "Silahkan Isi Password 8+ Karakter"),
@@ -92,9 +113,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                       isObsecure = !isObsecure;
                                     });
                                   },
-                                  icon: Icon(isObsecure
-                                      ? Icons.visibility
-                                      : Icons.visibility_off))
+                                  icon: Icon(
+                                      isObsecure
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      size:
+                                          SizeConfig.safeBlockHorizontal! * 2))
                             ],
                           )
                         ],
@@ -104,7 +128,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         children: [
                           Text(
                             "Belum punya Akun ? ",
-                            style: Theme.of(context).textTheme.headline3,
+                            style: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                            ),
                           ),
                           TextButton(
                               onPressed: () {
@@ -113,7 +139,10 @@ class _SignInScreenState extends State<SignInScreen> {
                               },
                               child: Text(
                                 "Daftar disini",
-                                style: Theme.of(context).textTheme.headline2,
+                                style: TextStyle(
+                                  fontSize:
+                                      SizeConfig.safeBlockHorizontal! * 1.5,
+                                ),
                               ))
                         ],
                       ),
@@ -121,20 +150,17 @@ class _SignInScreenState extends State<SignInScreen> {
                           style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 20)),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: SizeConfig.blockSizeVertical! * 2)),
                           onPressed: () {
                             userProvider.login(
                                 context, emailCtrl.text, passCtrl.text);
                           },
                           child: Text(
                             "Masuk",
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline3!
-                                .copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                                fontWeight: FontWeight.bold),
                           )),
                     ],
                   ),
@@ -158,18 +184,20 @@ class InputSignup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 20),
+      margin: EdgeInsets.symmetric(vertical: SizeConfig.screenHeight! * 0.02),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title!,
-            style: Theme.of(context).textTheme.headline1,
+            style: TextStyle(
+                fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                fontWeight: FontWeight.bold),
           ),
           Container(
-            padding: const EdgeInsets.all(10),
-            margin: const EdgeInsets.only(top: 15),
+            margin: EdgeInsets.only(top: SizeConfig.screenHeight! * 0.015),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey)),

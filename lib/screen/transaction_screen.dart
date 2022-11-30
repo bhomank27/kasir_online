@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
@@ -150,7 +151,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   @override
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
-
+    SizeConfig().init(context);
     return Scaffold(
       floatingActionButtonLocation: position,
       appBar: appbarWidget(title: "Transaksi Baru", context: context),
@@ -163,7 +164,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           }
         },
         child: position == FloatingActionButtonLocation.endFloat
-            ? const Text("Bayar")
+            ? const Icon(Icons.attach_money_outlined)
             : const Icon(Icons.arrow_upward_rounded),
       ),
       drawer: const DrawerMain(),
@@ -182,9 +183,9 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          dropdownHarga(),
+                          Expanded(flex: 1, child: dropdownHarga()),
                           searchBar(context),
-                          navbarMain()
+                          Expanded(flex: 2, child: navbarMain())
                         ],
                       ),
                       const SizedBox(
@@ -200,11 +201,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                             children: [
                               Total(
                                 title: "Grand Total",
-                                child: Text("Rp $total",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .subtitle1!
-                                        .copyWith(fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  "Rp $total",
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.safeBlockHorizontal! * 2,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                               Total(
                                   title: "Tunai",
@@ -212,9 +215,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                                     children: [
                                       Text(
                                         "Rp ",
-                                        style: theme.textTheme.subtitle1!
-                                            .copyWith(
-                                                fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                            fontSize: SizeConfig
+                                                    .safeBlockHorizontal! *
+                                                2,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                       Expanded(
                                         child: TextFormField(
@@ -230,12 +235,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                                   )),
                               Total(
                                   title: "Kembali",
-                                  child: Text("Rp. ${kembaliFunc()}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle1!
-                                          .copyWith(
-                                              fontWeight: FontWeight.bold))),
+                                  child: Text(
+                                    "Rp. ${kembaliFunc()}",
+                                    style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.safeBlockHorizontal! * 2,
+                                        fontWeight: FontWeight.bold),
+                                  )),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -256,10 +262,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   SizedBox buttonBayar(BuildContext context) {
     return SizedBox(
-      width: 100.w,
+      width: SizeConfig.screenWidth! * 0.53,
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
           onPressed: () {
+            if (_items.length < 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Silahkan Pilih Produk")));
+            }
             if (tunaiCtrl.text == '') {
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Selesaikan Transaksi")));
@@ -267,23 +277,45 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                        title: Text("Uang Tunai Kurang dari Grand Total"),
-                        content: Text("Lanjutkan?"),
+                        title: Text(
+                          "Uang Tunai Kurang dari Grand Total",
+                          style: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        content: Text(
+                          "Lanjutkan?",
+                          style: TextStyle(
+                              fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                              fontWeight: FontWeight.bold),
+                        ),
                         actions: [
                           ElevatedButton(
                               onPressed: () {
                                 loading(context);
-                                Timer(const Duration(seconds: 2), () {
+                                Future.delayed(const Duration(seconds: 2), () {
                                   clear();
                                   Navigator.pop(context);
                                   Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text("Transaksi Berhasil")));
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                          content: Text(
+                                    "Transaksi Berhasil",
+                                    style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.safeBlockHorizontal! * 2,
+                                        fontWeight: FontWeight.bold),
+                                  )));
                                   scrollTop();
                                 });
                               },
-                              child: Text("Ya")),
+                              child: Text(
+                                "Ya",
+                                style: TextStyle(
+                                    fontSize:
+                                        SizeConfig.safeBlockHorizontal! * 2,
+                                    fontWeight: FontWeight.bold),
+                              )),
                           ElevatedButton(
                               onPressed: () {
                                 Navigator.pop(context);
@@ -295,7 +327,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
               loading(context);
               Timer(const Duration(seconds: 2), () {
                 clear();
-                Navigator.pop(context);
+                Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Transaksi Berhasil")));
                 scrollTop();
@@ -311,10 +343,9 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
               ),
               Text(
                 "Bayar",
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle1!
-                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           )),
@@ -333,23 +364,35 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   List<DataColumn> _createColumns() {
     return [
-      const DataColumn(
-        label: Text('Nama Barang'),
+      DataColumn(
+        label: Text(
+          'Nama Barang',
+          style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 1.8),
+        ),
         numeric: false,
         tooltip: 'Name of the item',
       ),
-      const DataColumn(
-        label: Text('Jumlah'),
+      DataColumn(
+        label: Text(
+          'Jumlah',
+          style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 1.8),
+        ),
         numeric: false,
         tooltip: 'Total of the item',
       ),
-      const DataColumn(
-        label: Text('Harga'),
+      DataColumn(
+        label: Text(
+          'Harga',
+          style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 1.8),
+        ),
         numeric: false,
         tooltip: 'Price of the item',
       ),
-      const DataColumn(
-        label: Text('Total Harga'),
+      DataColumn(
+        label: Text(
+          'Total Harga',
+          style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 1.8),
+        ),
         numeric: false,
         tooltip: 'Total Price of the item',
       ),
@@ -377,10 +420,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         DataCell(
           Text(
             item.name!,
-            style: Theme.of(context).textTheme.subtitle1,
+            style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
         DataCell(Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             IconButton(
                 onPressed: () {
@@ -390,10 +434,10 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                     item.totalPrice = item.total! * item.price!;
                   });
                 },
-                icon: const Icon(Icons.arrow_drop_up_outlined)),
+                icon: const Icon(Icons.add)),
             Text(
               item.total.toString(),
-              style: Theme.of(context).textTheme.subtitle1,
+              style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
             ),
             IconButton(
                 onPressed: () {
@@ -407,19 +451,19 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                     });
                   }
                 },
-                icon: const Icon(Icons.arrow_drop_down_outlined)),
+                icon: const Icon(Icons.remove)),
           ],
         )),
         DataCell(
           Text(
             "${item.price}",
-            style: Theme.of(context).textTheme.subtitle1,
+            style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
         DataCell(
           Text(
             item.totalPrice.toString(),
-            style: Theme.of(context).textTheme.subtitle1,
+            style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
       ],
@@ -472,58 +516,68 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     ];
     return Visibility(
       visible: !isSearch,
-      child: Expanded(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: Card(
-                margin: EdgeInsets.symmetric(horizontal: 1.5.w),
-                color: Colors.white,
-                child: DropdownSearch<Item>(
-                  dropdownDecoratorProps: DropDownDecoratorProps(
-                    textAlignVertical: TextAlignVertical.center,
-                    dropdownSearchDecoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 2.w, vertical: 2.w)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: Card(
+              color: Colors.white,
+              child: DropdownSearch<Item>(
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  textAlignVertical: TextAlignVertical.center,
+                  dropdownSearchDecoration: InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
                   ),
-                  popupProps: PopupProps.dialog(
-                      fit: FlexFit.loose,
-                      showSearchBox: true,
-                      itemBuilder: ((context, item, isSelected) => ListTile(
-                            title: Text(item.name!),
-                          ))),
-                  items: datas,
-                  onChanged: ((value) {
-                    if (_items.any((element) => element.id == value!.id)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Produk Sudah Ada")));
-                    } else {
-                      total = total + value!.price!;
-                      _items.add(value);
-                      setState(() {
-                        _generateItems();
-                      });
-                    }
-                  }),
-                  dropdownBuilder: ((context, selectedItem) => Text(
-                        selectedItem?.name ?? 'Tambah Produk',
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.subtitle1,
-                      )),
-                  selectedItem: selected,
                 ),
+                popupProps: PopupProps.dialog(
+                    fit: FlexFit.loose,
+                    showSearchBox: true,
+                    searchFieldProps: TextFieldProps(
+                        style: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5)),
+                    itemBuilder: ((context, item, isSelected) => ListTile(
+                          title: Text(
+                            item.name!,
+                            style: TextStyle(
+                                fontSize:
+                                    SizeConfig.safeBlockHorizontal! * 1.5),
+                          ),
+                        ))),
+                items: datas,
+                onChanged: ((value) {
+                  if (_items.any((element) => element.id == value!.id)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Produk Sudah Ada")));
+                  } else {
+                    total = total + value!.price!;
+                    _items.add(value);
+                    setState(() {
+                      _generateItems();
+                    });
+                  }
+                }),
+                dropdownBuilder: ((context, selectedItem) => Text(
+                      selectedItem?.name ?? 'Tambah Produk',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: SizeConfig.safeBlockHorizontal! * 1.5),
+                    )),
+                selectedItem: selected,
               ),
             ),
-            ButtonNavbar(
+          ),
+          Expanded(
+            child: ButtonNavbar(
               title: "Scan Barang",
               icon: Icons.document_scanner_outlined,
               onPressed: () {
                 scanBarcodeNormal();
               },
             ),
-            ButtonNavbar(
+          ),
+          Expanded(
+            child: ButtonNavbar(
               title: "Cari",
               icon: Icons.search,
               onPressed: () {
@@ -532,8 +586,8 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                 });
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -577,48 +631,46 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   Widget dropdownHarga() {
-    return Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Container(
-              width: 200,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  hint: Text(
-                    "Pilih Harga",
-                    style: theme.textTheme.subtitle1,
-                  ),
-                  isExpanded: true,
-                  value: chooseHarga,
-                  style: const TextStyle(color: Colors.white),
-                  iconEnabledColor: Colors.black,
-                  items: [
-                    {"key": "Umum"},
-                    {"key": "warungan"}
-                  ]
-                      .map<DropdownMenuItem<String>>((item) =>
-                          DropdownMenuItem<String>(
-                              value: item.toString(),
-                              child: Text("${item['key']}",
-                                  style: const TextStyle(color: Colors.black))))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      chooseHarga = value;
-                    });
-                  },
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Container(
+            width: SizeConfig.screenWidth! * 0.3,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                hint: Text(
+                  "Pilih Harga",
+                  style: TextStyle(
+                      fontSize: SizeConfig.safeBlockHorizontal! * 1.5),
                 ),
+                value: chooseHarga,
+                style: const TextStyle(color: Colors.white),
+                iconEnabledColor: Colors.black,
+                items: [
+                  {"key": "Umum"},
+                  {"key": "warungan"}
+                ]
+                    .map<DropdownMenuItem<String>>((item) =>
+                        DropdownMenuItem<String>(
+                            value: item.toString(),
+                            child: Text("${item['key']}",
+                                style: const TextStyle(color: Colors.black))))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    chooseHarga = value;
+                  });
+                },
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -652,11 +704,12 @@ class Total extends StatelessWidget {
       children: [
         SizedBox(
           width: 30.w,
-          child: Text(title!,
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1!
-                  .copyWith(fontWeight: FontWeight.bold)),
+          child: Text(
+            title!,
+            style: TextStyle(
+                fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                fontWeight: FontWeight.bold),
+          ),
         ),
         Container(
           width: 60.w,
@@ -716,23 +769,27 @@ class ButtonNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 1.5.w),
+      margin: EdgeInsets.symmetric(
+        horizontal: SizeConfig.blockSizeHorizontal! * 0.5,
+      ),
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               minimumSize: const Size(150, 50), backgroundColor: Colors.white),
           onPressed: onPressed,
-          child: FittedBox(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  icon,
-                  color: Theme.of(context).primaryColor,
-                ),
-                Text(title!, style: theme.textTheme.subtitle1)
-              ],
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Theme.of(context).primaryColor,
+              ),
+              Text(title!,
+                  style: TextStyle(
+                      fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                      color: Colors.red))
+            ],
           )),
     );
   }
