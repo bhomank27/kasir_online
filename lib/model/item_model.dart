@@ -2,7 +2,7 @@ class Item {
   Item({
     this.id,
     this.name,
-    this.total,
+    this.jumlah,
     this.price,
     this.totalPrice,
     this.isSelected,
@@ -10,7 +10,7 @@ class Item {
 
   int? id;
   String? name;
-  int? total;
+  int? jumlah;
   double? price;
   double? totalPrice;
   bool? isSelected;

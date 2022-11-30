@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:kasir_online/model/dataTransaksi_model.dart';
+import 'package:kasir_online/model/transaksi_model.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
+
+import '../model/dataTransaksi_model.dart';
 
 class DataTransaksiScreen extends StatefulWidget {
   const DataTransaksiScreen({super.key});

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kasir_online/provider/produk_provider.dart';
+import 'package:kasir_online/provider/transaksi_provider.dart';
 import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/screen/sigin_screen.dart';
@@ -20,6 +21,7 @@ void main() {
           providers: [
             ChangeNotifierProvider(create: (_) => UserProvider()),
             ChangeNotifierProvider(create: (_) => ProdukProvider()),
+            ChangeNotifierProvider(create: (_) => TransaksiProvider()),
           ],
           child: const MyApp(),
         ),

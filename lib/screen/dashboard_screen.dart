@@ -112,45 +112,42 @@ class _DashboarScreenState extends State<DashboarScreen>
                   ),
                 ),
               ),
-              SizedBox(
-                height: SizeConfig.screenHeight! * 0.5,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: TableCalendar(
-                    calendarStyle: CalendarStyle(
-                        todayDecoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            shape: BoxShape.circle),
-                        selectedDecoration: BoxDecoration(
-                            color: (Theme.of(context).primaryColor)
-                                .withOpacity(0.6),
-                            shape: BoxShape.circle)),
-                    onDaySelected: _onDaySelected,
-                    selectedDayPredicate: ((day) {
-                      isVisible = true;
-                      return isSameDay(day, today);
-                    }),
-                    calendarBuilders: CalendarBuilders(
-                        holidayBuilder: ((context, day, focusedDay) {})),
-                    onHeaderTapped: ((_) {
-                      setState(() {
-                        today = DateTime.now();
-                      });
-                    }),
-                    locale: "id",
-                    headerStyle: HeaderStyle(
-                        formatButtonVisible: false,
-                        titleCentered: true,
-                        titleTextStyle: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontSize: SizeConfig.safeBlockHorizontal! * 2,
-                            fontWeight: FontWeight.bold)),
-                    availableGestures: AvailableGestures.all,
-                    focusedDay: today ?? DateTime.now(),
-                    firstDay: DateTime.utc(2010, 01, 01),
-                    lastDay: DateTime.utc(2030, 12, 30),
-                  ),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: TableCalendar(
+                  calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          shape: BoxShape.circle),
+                      selectedDecoration: BoxDecoration(
+                          color:
+                              (Theme.of(context).primaryColor).withOpacity(0.6),
+                          shape: BoxShape.circle)),
+                  onDaySelected: _onDaySelected,
+                  selectedDayPredicate: ((day) {
+                    isVisible = true;
+                    return isSameDay(day, today);
+                  }),
+                  calendarBuilders: CalendarBuilders(
+                      holidayBuilder: ((context, day, focusedDay) {})),
+                  onHeaderTapped: ((_) {
+                    setState(() {
+                      today = DateTime.now();
+                    });
+                  }),
+                  locale: "id",
+                  headerStyle: HeaderStyle(
+                      formatButtonVisible: false,
+                      titleCentered: true,
+                      titleTextStyle: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                          fontWeight: FontWeight.bold)),
+                  availableGestures: AvailableGestures.all,
+                  focusedDay: today ?? DateTime.now(),
+                  firstDay: DateTime.utc(2010, 01, 01),
+                  lastDay: DateTime.utc(2030, 12, 30),
                 ),
               ),
             ],

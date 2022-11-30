@@ -15,6 +15,9 @@ PreferredSizeWidget? appbarWidget({String? title, BuildContext? context}) {
       IconButton(
           onPressed: () {},
           icon: Icon(Icons.help, size: SizeConfig.safeBlockHorizontal! * 3)),
+      SizedBox(
+        width: SizeConfig.safeBlockHorizontal! * 2,
+      ),
       IconButton(
           onPressed: () {
             Navigator.push(context,
@@ -23,7 +26,10 @@ PreferredSizeWidget? appbarWidget({String? title, BuildContext? context}) {
           icon: Icon(
             Icons.settings,
             size: SizeConfig.safeBlockHorizontal! * 3,
-          ))
+          )),
+      SizedBox(
+        width: SizeConfig.safeBlockHorizontal! * 2,
+      )
     ],
   );
 }

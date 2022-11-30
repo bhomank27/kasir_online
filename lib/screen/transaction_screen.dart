@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/helper/layout.dart';
+import 'package:kasir_online/model/product_model.dart';
+import 'package:kasir_online/model/transaksi_model.dart';
+import 'package:kasir_online/provider/produk_provider.dart';
+import 'package:kasir_online/provider/transaksi_provider.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
 import '../model/item_model.dart';
@@ -23,8 +27,8 @@ class TransaksiScreen extends StatefulWidget {
 class _TransaksiScreenState extends State<TransaksiScreen> {
   Size? size;
   String _scanBarcode = "Unknows";
-  Item selected = Item(
-    name: " Tambah Produk",
+  Transaksi selected = Transaksi(
+    namaProduk: " Tambah Produk",
   );
   String? chooseHarga;
   int item = 5;
@@ -32,7 +36,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   bool isSearch = false;
   double total = 0;
   int kembali = 0;
-  List<Item> _items = [];
+  List<Transaksi> _items = [];
   FloatingActionButtonLocation? position =
       FloatingActionButtonLocation.endFloat;
   ScrollController scrollController = ScrollController();
@@ -47,21 +51,24 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     // });
   }
 
-  Future<void> scanBarcodeNormal() async {
+  Future<void> scanBarcodeNormal(ProdukProvider produkProvider) async {
     String barcodeScanRes;
-    List<Item> data = [];
+    List<Transaksi> data = [];
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       if (barcodeScanRes != '-1') {
-        data.add(Item(
-            id: int.parse(barcodeScanRes),
-            name: "Item Tet",
-            total: 1,
-            price: 1000,
-            totalPrice: 2000,
-            isSelected: false));
+        produkProvider
+            .getProdukById(barcodeScanRes)
+            .then((value) => print(value));
+        // data.add(Item(
+        //     id: int.parse(barcodeScanRes),
+        //     name: "Item Tet",
+        //     total: 1,
+        //     price: 1000,
+        //     totalPrice: 2000,
+        //     isSelected: false));
       }
       print(data);
       // player.play('beep.mp3');
@@ -88,14 +95,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     );
   }
 
-  List<Item> _generateItems() {
+  List<Transaksi> _generateItems() {
     return List.generate(_items.length, (int index) {
-      return Item(
+      return Transaksi(
         id: _items[index].id,
-        name: _items[index].name,
-        price: _items[index].price,
-        total: _items[index].total,
-        totalPrice: _items[index].totalPrice,
+        namaProduk: _items[index].namaProduk,
+        hargaProduk: _items[index].hargaProduk,
+        jumlah: _items[index].jumlah,
+        totalBayar: _items[index].totalBayar,
         isSelected: _items[index].isSelected,
       );
     });
@@ -142,14 +149,16 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       tunaiCtrl.clear();
       kembali = 0;
       _items.clear();
-      selected = Item(
-        name: " Tambah Produk",
+      selected = Transaksi(
+        namaProduk: " Tambah Produk",
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    var produkProvider = Provider.of<ProdukProvider>(context);
+    var transaksiProvider = Provider.of<TransaksiProvider>(context);
     size = MediaQuery.of(context).size;
     SizeConfig().init(context);
     return Scaffold(
@@ -185,13 +194,15 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         children: [
                           Expanded(flex: 1, child: dropdownHarga()),
                           searchBar(context),
-                          Expanded(flex: 2, child: navbarMain())
+                          Expanded(flex: 2, child: navbarMain(produkProvider))
                         ],
                       ),
                       const SizedBox(
                         height: 20,
                       ),
-                      dataTableTransaksi(context),
+                      dataTableTransaksi(
+                        context,
+                      ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -245,7 +256,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                               const SizedBox(
                                 height: 10,
                               ),
-                              buttonBayar(context)
+                              buttonBayar(context, transaksiProvider)
                             ],
                           ),
                         ],
@@ -260,13 +271,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     );
   }
 
-  SizedBox buttonBayar(BuildContext context) {
+  SizedBox buttonBayar(
+      BuildContext context, TransaksiProvider transaksiProvider) {
     return SizedBox(
       width: SizeConfig.screenWidth! * 0.53,
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
           onPressed: () {
-            if (_items.length < 0) {
+            if (_items.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Silahkan Pilih Produk")));
             }
@@ -324,6 +336,8 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         ],
                       ));
             } else {
+              transaksiProvider.addTransaksi(
+                  total.toString(), kembali.toString(), tunaiCtrl.text);
               loading(context);
               Timer(const Duration(seconds: 2), () {
                 clear();
@@ -399,7 +413,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     ];
   }
 
-  DataRow _createRow(Item item) {
+  DataRow _createRow(Transaksi item) {
     return DataRow(
       // index: item.id, // for DataRow.byIndex
       key: ValueKey(item.id),
@@ -419,7 +433,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       cells: [
         DataCell(
           Text(
-            item.name!,
+            item.namaProduk!,
             style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
@@ -429,25 +443,28 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             IconButton(
                 onPressed: () {
                   setState(() {
-                    total = total + item.totalPrice!;
-                    item.total = item.total! + 1;
-                    item.totalPrice = item.total! * item.price!;
+                    item.jumlah = item.jumlah! + 1;
+                    item.totalBayar = item.totalBayar! + item.hargaProduk!;
+                    total = total + item.totalBayar!;
                   });
                 },
                 icon: const Icon(Icons.add)),
             Text(
-              item.total.toString(),
+              item.jumlah.toString(),
               style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
             ),
             IconButton(
                 onPressed: () {
-                  if (item.total! <= 1) {
+                  if (item.jumlah! <= 1) {
                     setState(() {
                       _items.removeWhere((element) => element.id == item.id);
+                      total = total - item.totalBayar!;
                     });
                   } else {
                     setState(() {
-                      item.total = item.total! - 1;
+                      item.jumlah = item.jumlah! - 1;
+                      item.totalBayar = item.totalBayar! - item.hargaProduk!;
+                      total = total - item.totalBayar!;
                     });
                   }
                 },
@@ -456,13 +473,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         )),
         DataCell(
           Text(
-            "${item.price}",
+            "${item.hargaProduk}",
             style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
         DataCell(
           Text(
-            item.totalPrice.toString(),
+            item.totalBayar.toString(),
             style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal! * 2),
           ),
         ),
@@ -470,7 +487,9 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     );
   }
 
-  SizedBox dataTableTransaksi(BuildContext context) {
+  SizedBox dataTableTransaksi(
+    BuildContext context,
+  ) {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: SingleChildScrollView(
@@ -490,89 +509,97 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     );
   }
 
-  Visibility navbarMain() {
-    List<Item> datas = [
-      Item(
-          id: 1,
-          name: "Kecap ABC",
-          total: 1,
-          price: 2000,
-          totalPrice: 2000,
-          isSelected: false),
-      Item(
-          id: 2,
-          name: "SUSU Indomilk",
-          total: 1,
-          price: 2500,
-          totalPrice: 2500,
-          isSelected: false),
-      Item(
-          id: 3,
-          name: "Indomie",
-          total: 1,
-          price: 3000,
-          totalPrice: 3000,
-          isSelected: false),
-    ];
+  Visibility navbarMain(ProdukProvider produkProvider) {
     return Visibility(
       visible: !isSearch,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(
-            child: Card(
-              color: Colors.white,
-              child: DropdownSearch<Item>(
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  textAlignVertical: TextAlignVertical.center,
-                  dropdownSearchDecoration: InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
+          FutureBuilder(
+            future: produkProvider.getProduk(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                return Expanded(
+                  child: Card(
+                    color: Colors.white,
+                    child: DropdownSearch<Produk>(
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        textAlignVertical: TextAlignVertical.center,
+                        dropdownSearchDecoration: InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                      ),
+                      popupProps: PopupProps.dialog(
+                          fit: FlexFit.loose,
+                          showSearchBox: true,
+                          searchFieldProps: TextFieldProps(
+                              style: TextStyle(
+                                  fontSize:
+                                      SizeConfig.safeBlockHorizontal! * 1.5)),
+                          itemBuilder: ((context, produk, isSelected) =>
+                              ListTile(
+                                title: Text(
+                                  produk.namaProduk!,
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.safeBlockHorizontal! *
+                                              1.5),
+                                ),
+                              ))),
+                      items: snapshot.data,
+                      onChanged: ((produk) {
+                        print(produk);
+                        if (_items.any((element) => element.id == produk!.id)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("Produk Sudah Ada")));
+                        } else {
+                          Transaksi data = Transaksi(
+                              id: produk!.id,
+                              namaProduk: produk.namaProduk,
+                              hargaProduk: double.parse(produk.hargaUmum!),
+                              jumlah: 1,
+                              totalBayar: double.parse(produk.hargaUmum!) * 1,
+                              isSelected: false);
+
+                          _items.add(data);
+                          setState(() {
+                            total = total + double.parse(produk.hargaUmum!);
+                            _generateItems();
+                          });
+
+                          print(_items);
+                        }
+                      }),
+                      dropdownBuilder: ((context, selectedItem) => Container(
+                            margin: EdgeInsets.only(
+                                left: SizeConfig.safeBlockHorizontal! * 2),
+                            child: Text(
+                              selectedItem?.namaProduk ?? 'Tambah Produk',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize:
+                                      SizeConfig.safeBlockHorizontal! * 1.5),
+                            ),
+                          )),
+                      // selectedItem: selected,
+                    ),
                   ),
-                ),
-                popupProps: PopupProps.dialog(
-                    fit: FlexFit.loose,
-                    showSearchBox: true,
-                    searchFieldProps: TextFieldProps(
-                        style: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5)),
-                    itemBuilder: ((context, item, isSelected) => ListTile(
-                          title: Text(
-                            item.name!,
-                            style: TextStyle(
-                                fontSize:
-                                    SizeConfig.safeBlockHorizontal! * 1.5),
-                          ),
-                        ))),
-                items: datas,
-                onChanged: ((value) {
-                  if (_items.any((element) => element.id == value!.id)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Produk Sudah Ada")));
-                  } else {
-                    total = total + value!.price!;
-                    _items.add(value);
-                    setState(() {
-                      _generateItems();
-                    });
-                  }
-                }),
-                dropdownBuilder: ((context, selectedItem) => Text(
-                      selectedItem?.name ?? 'Tambah Produk',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: SizeConfig.safeBlockHorizontal! * 1.5),
-                    )),
-                selectedItem: selected,
-              ),
-            ),
+                );
+              }
+            },
           ),
           Expanded(
             child: ButtonNavbar(
               title: "Scan Barang",
               icon: Icons.document_scanner_outlined,
               onPressed: () {
-                scanBarcodeNormal();
+                scanBarcodeNormal(produkProvider);
               },
             ),
           ),

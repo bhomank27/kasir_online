@@ -3,6 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/model/product_model.dart';
 import 'package:kasir_online/provider/produk_provider.dart';
 import 'package:kasir_online/theme/theme.dart';
@@ -30,6 +31,8 @@ class _ProdukScreenState extends State<ProdukScreen> {
   var kodeCtrl = TextEditingController();
   var namaCtrl = TextEditingController();
   var kategoriCtrl = TextEditingController();
+  var hargaUmumCtrl = TextEditingController();
+  var hargaGrosirCtrl = TextEditingController();
   List<Produk> _items = [];
   List dropdownitem = [];
 
@@ -73,6 +76,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
   @override
   Widget build(BuildContext context) {
     var produkProvider = Provider.of<ProdukProvider>(context);
+    SizeConfig().init(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -83,30 +87,37 @@ class _ProdukScreenState extends State<ProdukScreen> {
           return Stack(
             children: [
               Container(
-                margin: const EdgeInsets.all(20),
+                margin: EdgeInsets.all(SizeConfig.blockSizeHorizontal! * 1.5),
                 child: Row(
                   children: [
                     // data table
                     Expanded(
                         flex: 2,
                         child: Container(
-                          margin: const EdgeInsets.only(right: 20),
-                          padding: const EdgeInsets.all(15),
+                          margin: EdgeInsets.only(
+                              right: SizeConfig.blockSizeHorizontal! * 1),
+                          padding: EdgeInsets.all(
+                              SizeConfig.blockSizeHorizontal! * 1),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(
+                                SizeConfig.blockSizeHorizontal! * 1),
                             color: Colors.white,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Container(
-                                margin: const EdgeInsets.only(bottom: 15),
+                                margin: EdgeInsets.only(
+                                    bottom:
+                                        SizeConfig.blockSizeHorizontal! * 1),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    dropdownkatakunci(produkProvider),
-                                    totalItem(produkProvider),
+                                    Expanded(
+                                        child:
+                                            dropdownkatakunci(produkProvider)),
+                                    Expanded(child: totalItem(produkProvider)),
                                   ],
                                 ),
                               ),
@@ -132,8 +143,10 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                 Row(
                                   children: [
                                     Container(
-                                      height: 100,
-                                      width: 100,
+                                      height:
+                                          SizeConfig.blockSizeHorizontal! * 8,
+                                      width:
+                                          SizeConfig.blockSizeHorizontal! * 8,
                                       decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
@@ -142,19 +155,18 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                               image: AssetImage(
                                                   "assets/icon/profile/toko.png"))),
                                     ),
-                                    const SizedBox(
-                                      width: 20,
+                                    SizedBox(
+                                      width:
+                                          SizeConfig.blockSizeHorizontal! * 2,
                                     ),
                                     Flexible(
-                                      child: Text(
-                                        data!.namaProduk!,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline1!
-                                            .copyWith(
-                                              color: Colors.white,
-                                            ),
-                                      ),
+                                      child: Text(data!.namaProduk!,
+                                          style: TextStyle(
+                                              fontSize: SizeConfig
+                                                      .blockSizeHorizontal! *
+                                                  2,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white)),
                                     ),
                                   ],
                                 )
@@ -162,7 +174,9 @@ class _ProdukScreenState extends State<ProdukScreen> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: EdgeInsets.symmetric(
+                                horizontal:
+                                    SizeConfig.blockSizeHorizontal! * 2),
                             decoration: const BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.only(
@@ -171,19 +185,11 @@ class _ProdukScreenState extends State<ProdukScreen> {
                             child: Column(
                               children: [
                                 HargaItem(
-                                    title: "Harga Jual Umum", harga: "7.200"),
+                                    title: "Harga Jual Umum",
+                                    harga: data?.hargaUmum ?? "0"),
                                 HargaItem(
-                                    title: "Harga Jual Member", harga: "0"),
-                                HargaItem(
-                                    title: "Harga Jual Grosir", harga: "0"),
-                                HargaItem(
-                                    title: "Harga Jual Online", harga: "0"),
-                                HargaItem(
-                                    title: "Harga Jual Khusus", harga: "0"),
-                                HargaItem(
-                                    title: "Harga Jual Spesial", harga: "0"),
-                                HargaItem(
-                                    title: "Harga Jual Lain-lain", harga: "0"),
+                                    title: "Harga Jual Grosir",
+                                    harga: data?.hargaGrosir ?? "0"),
                               ],
                             ),
                           )
@@ -210,11 +216,11 @@ class _ProdukScreenState extends State<ProdukScreen> {
               );
         } else {
           return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                "Total Item : ",
-                style: Theme.of(context).textTheme.headline3,
-              ),
+              Text("Total Item : ",
+                  style:
+                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
@@ -222,10 +228,9 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(color: Colors.grey, width: 2)),
-                child: Text(
-                  '${snapshot.data.length}',
-                  style: Theme.of(context).textTheme.headline3,
-                ),
+                child: Text('${snapshot.data.length}',
+                    style: TextStyle(
+                        fontSize: SizeConfig.blockSizeHorizontal! * 2)),
               )
             ],
           );
@@ -251,41 +256,48 @@ class _ProdukScreenState extends State<ProdukScreen> {
           dataDropDown = dataDropDown.toSet().toList();
           print(dataDropDown);
           return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("Kata Kunci : ",
-                  style: Theme.of(context).textTheme.headline3),
-              Container(
-                width: 250,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey, width: 2)),
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    hint: Text(
-                      "Nama Produk",
-                      style: Theme.of(context).textTheme.headline3,
+                  style:
+                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+              Expanded(
+                child: Container(
+                  // width: SizeConfig.screenWidth! * 0.1,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey, width: 2)),
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      hint: FittedBox(
+                        child: Text("Nama Produk",
+                            style: TextStyle(
+                                fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+                      ),
+                      isExpanded: true,
+                      value: choosenKey,
+                      style: const TextStyle(color: Colors.white),
+                      iconEnabledColor: Colors.black,
+                      borderRadius: BorderRadius.circular(10),
+                      items: dataDropDown
+                          .map<DropdownMenuItem<String>>((item) =>
+                              DropdownMenuItem<String>(
+                                  value: item.toString(),
+                                  child: Text("$item",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize:
+                                              SizeConfig.blockSizeHorizontal! *
+                                                  2))))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          choosenKey = value;
+                        });
+                      },
                     ),
-                    isExpanded: true,
-                    value: choosenKey,
-                    style: const TextStyle(color: Colors.white),
-                    iconEnabledColor: Colors.black,
-                    borderRadius: BorderRadius.circular(10),
-                    items: dataDropDown
-                        .map<DropdownMenuItem<String>>((item) =>
-                            DropdownMenuItem<String>(
-                                value: item.toString(),
-                                child: Text("$item",
-                                    style:
-                                        Theme.of(context).textTheme.headline3)))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        choosenKey = value;
-                      });
-                    },
                   ),
                 ),
               ),
@@ -310,17 +322,15 @@ class _ProdukScreenState extends State<ProdukScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.add_circle,
-              size: 30,
+              size: SizeConfig.blockSizeVertical! * 4,
             ),
-            const SizedBox(
-              width: 20,
+            SizedBox(
+              width: SizeConfig.blockSizeHorizontal! * 2,
             ),
-            Text(
-              "Tambah Produk",
-              style: Theme.of(context).textTheme.headline3,
-            )
+            Text("Tambah Produk",
+                style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))
           ],
         ));
   }
@@ -330,7 +340,8 @@ class _ProdukScreenState extends State<ProdukScreen> {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              contentPadding: const EdgeInsets.all(100),
+              contentPadding:
+                  EdgeInsets.all(SizeConfig.blockSizeHorizontal! * 2),
               content: SingleChildScrollView(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -354,16 +365,34 @@ class _ProdukScreenState extends State<ProdukScreen> {
                           controller: kategoriCtrl,
                           item: item?.typeProduk ?? '',
                         ),
-                        const SizedBox(
-                          height: 50,
+                        InputProduk(
+                          title: "Harga Grosir",
+                          controller: hargaUmumCtrl,
+                          item: item?.typeProduk ?? '',
+                        ),
+                        InputProduk(
+                          title: "Harga Umum",
+                          controller: hargaGrosirCtrl,
+                          item: item?.typeProduk ?? '',
+                        ),
+                        SizedBox(
+                          height: SizeConfig.blockSizeVertical! * 2,
                         ),
                         ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 10)),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal:
+                                        SizeConfig.blockSizeHorizontal! * 2,
+                                    vertical:
+                                        SizeConfig.blockSizeVertical! * 2)),
                             onPressed: () {
-                              produkProvider.addProduk(kodeCtrl.text,
-                                  namaCtrl.text, kategoriCtrl.text, context);
+                              produkProvider.addProduk(
+                                  kodeCtrl.text,
+                                  namaCtrl.text,
+                                  kategoriCtrl.text,
+                                  hargaUmumCtrl.text,
+                                  hargaGrosirCtrl.text,
+                                  context);
                               // setState(() {
                               //   _items.add(Produk(
                               //       kode: int.parse(kodeCtrl.text),
@@ -402,31 +431,31 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     const SizedBox(
                       width: 30,
                     ),
-                    Column(children: [
-                      Container(
-                        height: 150,
-                        width: 150,
-                        decoration: BoxDecoration(
-                            image: const DecorationImage(
-                                image: AssetImage("assets/icon/profile.png")),
-                            border: Border.all()),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10)),
-                          onPressed: () {},
-                          child: Row(
-                            children: const [
-                              Icon(Icons.cloud_upload_rounded),
-                              SizedBox(
-                                width: 20,
-                              ),
-                              Text("Upload Gambar ")
-                            ],
-                          ))
-                    ])
+                    // Column(children: [
+                    //   Container(
+                    //     height: 150,
+                    //     width: 150,
+                    //     decoration: BoxDecoration(
+                    //         image: const DecorationImage(
+                    //             image: AssetImage("assets/icon/profile.png")),
+                    //         border: Border.all()),
+                    //   ),
+                    //   const SizedBox(height: 10),
+                    //   ElevatedButton(
+                    //       style: ElevatedButton.styleFrom(
+                    //           padding: const EdgeInsets.symmetric(
+                    //               horizontal: 10, vertical: 10)),
+                    //       onPressed: () {},
+                    //       child: Row(
+                    //         children: const [
+                    //           Icon(Icons.cloud_upload_rounded),
+                    //           SizedBox(
+                    //             width: 20,
+                    //           ),
+                    //           Text("Upload Gambar ")
+                    //         ],
+                    //       ))
+                    // ])
                   ],
                 ),
               ),
@@ -448,14 +477,16 @@ class _ProdukScreenState extends State<ProdukScreen> {
           _items = snapshot.data;
           _generateDropdownKategori(_items);
           return SizedBox(
-            height: MediaQuery.of(context).size.height / 1.4,
+            // height: SizeConfig.screenHeight! * 0.7,
             child: SingleChildScrollView(
               child: DataTable(
                 showCheckboxColumn: false,
-                headingTextStyle: Theme.of(context)
-                    .textTheme
-                    .subtitle1!
-                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                headingTextStyle: TextStyle(
+                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                    fontWeight: FontWeight.bold),
+                dataTextStyle: TextStyle(
+                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                    color: Colors.black),
                 headingRowColor: MaterialStateColor.resolveWith(
                     (Set<MaterialState> states) =>
                         Theme.of(context).primaryColor),
@@ -474,7 +505,9 @@ class _ProdukScreenState extends State<ProdukScreen> {
   List<DataColumn> _createColumns() {
     return [
       const DataColumn(
-        label: Text('Kode'),
+        label: Text(
+          'Kode',
+        ),
         numeric: false,
       ),
       const DataColumn(
@@ -518,13 +551,11 @@ class _ProdukScreenState extends State<ProdukScreen> {
         DataCell(
           Text(
             item.kodeProduk!,
-            style: Theme.of(context).textTheme.subtitle1,
           ),
         ),
         DataCell(
           Text(
             item.namaProduk!,
-            style: Theme.of(context).textTheme.subtitle1,
           ),
           placeholder: false,
           showEditIcon: true,
@@ -534,7 +565,6 @@ class _ProdukScreenState extends State<ProdukScreen> {
         ),
         DataCell(Text(
           item.typeProduk!,
-          style: Theme.of(context).textTheme.subtitle1,
         )),
       ],
     );
@@ -562,15 +592,14 @@ class InputProduk extends StatelessWidget {
       children: [
         SizedBox(
           width: 200,
-          child: Text(
-            title!,
-            style: Theme.of(context).textTheme.headline3,
-          ),
+          child: Text(title!,
+              style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
         ),
         SizedBox(
             width: 300,
             child: TextFormField(
               controller: controller,
+              style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2),
               decoration: InputDecoration(hintText: item ?? ""),
             ))
       ],
@@ -588,10 +617,9 @@ class HargaItem extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-            child: Text(
-          title!,
-          style: Theme.of(context).textTheme.headline3,
-        )),
+            child: Text(title!,
+                style: TextStyle(
+                    fontSize: SizeConfig.blockSizeHorizontal! * 1.5))),
         Expanded(
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
@@ -600,10 +628,9 @@ class HargaItem extends StatelessWidget {
                 color: kWhite,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey, width: 2)),
-            child: Text(
-              harga!,
-              style: Theme.of(context).textTheme.headline3,
-            ),
+            child: Text(harga!,
+                style:
+                    TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.5)),
           ),
         )
       ],

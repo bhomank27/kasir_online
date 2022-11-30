@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/provider/user_provider.dart';
-import 'package:kasir_online/theme/theme.dart';
 import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatefulWidget {
