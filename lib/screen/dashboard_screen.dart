@@ -83,7 +83,10 @@ class _DashboarScreenState extends State<DashboarScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                NavbarMain(size: size, style: style),
+                GestureDetector(
+                    onTap: (() => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const TransaksiScreen()))),
+                    child: NavbarMain(size: size, style: style)),
                 const subNavbar(),
                 contentMain(context),
               ],
@@ -211,39 +214,34 @@ class NavbarMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) => Container(
-        height: size.height * 0.2,
+        // height: size.height * 0.2,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: Colors.white,
         ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(7.0),
-            child: GestureDetector(
-              onTap: (() => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const TransaksiScreen()))),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/icon/transaksi.png",
-                      height: SizeConfig.safeBlockHorizontal! * 4,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    SizedBox(
-                      height: SizeConfig.safeBlockVertical! * 1,
-                    ),
-                    Text("Transaksi Baru",
-                        style: TextStyle(
-                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
-                            fontWeight: FontWeight.bold,
-                            color: theme.primaryColor))
-                  ],
+        child: Padding(
+          padding: EdgeInsets.all(SizeConfig.blockSizeVertical! * 5),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  "assets/icon/transaksi.png",
+                  height: SizeConfig.safeBlockHorizontal! * 4,
+                  color: Theme.of(context).primaryColor,
                 ),
-              ),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical! * 1,
+                ),
+                Text("Transaksi Baru",
+                    style: TextStyle(
+                        fontSize: SizeConfig.safeBlockHorizontal! * 1.5,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryColor))
+              ],
             ),
           ),
         ),

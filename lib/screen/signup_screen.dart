@@ -79,7 +79,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   decoration: InputDecoration(
                                       contentPadding: EdgeInsets.symmetric(
                                           vertical:
-                                              SizeConfig.screenHeight! * 0.04),
+                                              SizeConfig.screenHeight! * 0.027),
                                       isDense: true,
                                       border: InputBorder.none,
                                       hintText: "Silahkan Isi nama",
@@ -108,7 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   decoration: InputDecoration(
                                       contentPadding: EdgeInsets.symmetric(
                                           vertical:
-                                              SizeConfig.screenHeight! * 0.04),
+                                              SizeConfig.screenHeight! * 0.027),
                                       isDense: true,
                                       border: InputBorder.none,
                                       hintText: "Silahkan Isi Email",
@@ -236,8 +236,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
                               padding: EdgeInsets.symmetric(
-                                  vertical:
-                                      SizeConfig.blockSizeVertical! * 1.5)),
+                                  vertical: SizeConfig.blockSizeVertical! * 2)),
                           onPressed: () {
                             userProvider.signUp(
                               context,
