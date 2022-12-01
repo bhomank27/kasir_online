@@ -59,9 +59,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       if (barcodeScanRes != '-1') {
-        produkProvider
-            .getProdukById(barcodeScanRes)
-            .then((value) => print(value));
+        produkProvider.getProdukById(barcodeScanRes).then((value) => _items.add(
+            Transaksi(
+                id: value.id,
+                namaProduk: value.namaProduk,
+                hargaProduk: double.parse(value.hargaUmum!),
+                jumlah: 1,
+                totalBayar: double.parse(value.hargaUmum!),
+                isSelected: false)));
         // data.add(Item(
         //     id: int.parse(barcodeScanRes),
         //     name: "Item Tet",
