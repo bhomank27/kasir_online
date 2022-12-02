@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:kasir_online/config/baseUrl.dart';
 import 'package:http/http.dart' as http;
 import 'package:kasir_online/helper/layout.dart';
+import 'package:kasir_online/provider/produk_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../storage/storage.dart';
 
 class UserProvider extends ChangeNotifier {
   var storage = SecureStorage();
+
   signUp(context, name, email, password, passwordConfirm) async {
     var url = Uri.parse('$baseUrl/register');
 
@@ -41,6 +44,7 @@ class UserProvider extends ChangeNotifier {
       },
     );
     var status = jsonDecode(response.body)['success'];
+
     if (status) {
       var token = jsonDecode(response.body)['token'];
       var role = jsonDecode(response.body)['user']['role'];
@@ -75,13 +79,9 @@ class UserProvider extends ChangeNotifier {
 
   logout(context) async {
     try {
-      var url = Uri.parse('$baseUrl/logout');
-      var token = await storage.read('token');
-      var response = await http.post(url, headers: {
-        "Authorization": "Bearer $token",
-      });
-      print(response.body);
       await storage.deleteAll();
+      Provider.of<ProdukProvider>(context, listen: false).allKategori = [];
+      Provider.of<ProdukProvider>(context, listen: false).allProduk = [];
       Navigator.pushNamedAndRemoveUntil(context, '/signIn', (route) => false);
     } catch (e) {
       ScaffoldMessenger.of(context)

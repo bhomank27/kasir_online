@@ -6,7 +6,6 @@ import 'package:kasir_online/provider/transaksi_provider.dart';
 import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/screen/sigin_screen.dart';
-import 'package:kasir_online/screen/signup_screen.dart';
 import 'package:kasir_online/screen/splashscreen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:sizer/sizer.dart';
@@ -41,7 +40,7 @@ class MyApp extends StatelessWidget {
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate, 
+          GlobalWidgetsLocalizations.delegate,
         ],
         supportedLocales: const [
           Locale('en', 'US'), // English, no country code

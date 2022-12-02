@@ -31,7 +31,7 @@ class Transaksi {
   Transaksi.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     id_user = json['id_user'];
-    totalBayar = json['total_bayar'];
+    totalBayar = double.parse(json['total_bayar']);
     tunai = json['tunai'];
     kembali = json['kembali'];
     tglTransaksi = json['tgl_transaksi'];

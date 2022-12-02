@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/model/product_model.dart';
@@ -19,8 +17,6 @@ class ProdukScreen extends StatefulWidget {
 }
 
 class _ProdukScreenState extends State<ProdukScreen> {
-  String _scanBarcode = 'Unknown';
-  final player = AudioCache();
   String? choosenKey;
   bool isVisible = false;
   Produk? data = Produk(
@@ -33,19 +29,6 @@ class _ProdukScreenState extends State<ProdukScreen> {
   var kategoriCtrl = TextEditingController();
   var hargaUmumCtrl = TextEditingController();
   var hargaGrosirCtrl = TextEditingController();
-  List<Produk> _items = [];
-  List dropdownitem = [];
-
-  @override
-  void initState() {
-    super.initState();
-    // setState(() {
-    //   _items = _generateProduks();
-    // });
-    setState(() {
-      dropdownitem = _generateDropdownKategori(_items);
-    });
-  }
 
   clearController() {
     setState(() {
@@ -57,35 +40,34 @@ class _ProdukScreenState extends State<ProdukScreen> {
     });
   }
 
-  Future<void> scanBarcodeNormal() async {
+  Future<void> scanBarcodeNormal(context) async {
     String? barcodeScanRes;
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
-      print(barcodeScanRes);
-      // player.play('beep.mp3');
     } catch (e) {
-      print(e);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Gagal Scan Barcode")));
     }
-
     if (!mounted) return;
-
     setState(() {
-      kodeCtrl.text = barcodeScanRes ?? "tidak terdeteksi";
+      kodeCtrl.text = barcodeScanRes!;
     });
   }
 
-  List _generateDropdownKategori(List<Produk> item) {
-    return List.generate(_items.length, (index) {
-      return {
-        'key': item[index].namaProduk,
-      };
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      var provider = Provider.of<ProdukProvider>(context, listen: false);
+      // provider.allProduk = [];
+      provider.getProduk();
+      provider.getKategori();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    var produkProvider = Provider.of<ProdukProvider>(context);
     SizeConfig().init(context);
 
     return Scaffold(
@@ -100,6 +82,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                 Container(
                   margin: EdgeInsets.all(SizeConfig.blockSizeHorizontal! * 1.5),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // data table
                       Expanded(
@@ -125,17 +108,12 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      Expanded(
-                                          child: dropdownkatakunci(
-                                              produkProvider)),
-                                      Expanded(
-                                          child: totalItem(produkProvider)),
+                                      Expanded(child: dropdownkatakunci()),
+                                      Expanded(child: totalItem()),
                                     ],
                                   ),
                                 ),
-
-                                //data table produk
-                                dataTableTransaksi(context),
+                                dataTableProduk(context),
                               ],
                             ),
                           )),
@@ -219,166 +197,75 @@ class _ProdukScreenState extends State<ProdukScreen> {
     );
   }
 
-  FutureBuilder<dynamic> totalItem(ProdukProvider produkProvider) {
-    return FutureBuilder(
-      future: produkProvider.getProduk(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (!snapshot.hasData) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Total Item : ",
-                  style:
-                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: Colors.grey, width: 2)),
-                child: Text('0',
-                    style: TextStyle(
-                        fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              )
-            ],
-          );
-        } else {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Total Item : ",
-                  style:
-                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: Colors.grey, width: 2)),
-                child: Text('${snapshot.data.length}',
-                    style: TextStyle(
-                        fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              )
-            ],
-          );
-        }
-      },
+  Widget totalItem() {
+    return Consumer<ProdukProvider>(
+      builder: (BuildContext context, produkProvider, Widget? child) => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text("Total Item : ",
+              style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: Colors.grey, width: 2)),
+            child: Text('${produkProvider.allProduk.length}',
+                style:
+                    TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+          )
+        ],
+      ),
     );
   }
 
-  FutureBuilder<dynamic> dropdownkatakunci(ProdukProvider produkProvider) {
-    return FutureBuilder(
-      future: produkProvider.getProduk(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (!snapshot.hasData) {
-          return Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Kata Kunci : ",
-                  style:
-                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              Expanded(
-                child: Container(
-                  // width: SizeConfig.screenWidth! * 0.1,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey, width: 2)),
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      hint: FittedBox(
-                        child: Text("Nama Produk",
-                            style: TextStyle(
-                                fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-                      ),
-                      isExpanded: true,
-                      value: choosenKey,
-                      style: const TextStyle(color: Colors.white),
-                      iconEnabledColor: Colors.black,
-                      borderRadius: BorderRadius.circular(10),
-                      items: ["Belum ada Produk"]
-                          .map<DropdownMenuItem<String>>((item) =>
-                              DropdownMenuItem<String>(
-                                  value: item.toString(),
-                                  child: Text("$item",
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize:
-                                              SizeConfig.blockSizeHorizontal! *
-                                                  2))))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          choosenKey = value;
-                        });
-                      },
-                    ),
+  Widget dropdownkatakunci() {
+    return Consumer<ProdukProvider>(
+      builder: (BuildContext context, produkProvider, Widget? child) => Row(
+        children: [
+          Text("Kata Kunci : ",
+              style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey, width: 2)),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  hint: FittedBox(
+                    child: Text("Nama Produk",
+                        style: TextStyle(
+                            fontSize: SizeConfig.blockSizeHorizontal! * 2)),
                   ),
+                  isExpanded: true,
+                  value: choosenKey,
+                  style: const TextStyle(color: Colors.white),
+                  iconEnabledColor: Colors.black,
+                  borderRadius: BorderRadius.circular(10),
+                  items: produkProvider.kategori
+                      .map<DropdownMenuItem<String>>((item) =>
+                          DropdownMenuItem<String>(
+                              value: item.toString(),
+                              child: Text("$item",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize:
+                                          SizeConfig.blockSizeHorizontal! *
+                                              2))))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      choosenKey = value;
+                    });
+                  },
                 ),
               ),
-            ],
-          );
-        } else {
-          List<Produk> data = snapshot.data;
-          List dataDropDown = [];
-          for (int i = 0; i < data.length; i++) {
-            dataDropDown.add(data[i].namaProduk);
-          }
-          dataDropDown = dataDropDown.toSet().toList();
-          print(dataDropDown);
-          return Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Kata Kunci : ",
-                  style:
-                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-              Expanded(
-                child: Container(
-                  // width: SizeConfig.screenWidth! * 0.1,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey, width: 2)),
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      hint: FittedBox(
-                        child: Text("Nama Produk",
-                            style: TextStyle(
-                                fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-                      ),
-                      isExpanded: true,
-                      value: choosenKey,
-                      style: const TextStyle(color: Colors.white),
-                      iconEnabledColor: Colors.black,
-                      borderRadius: BorderRadius.circular(10),
-                      items: dataDropDown
-                          .map<DropdownMenuItem<String>>((item) =>
-                              DropdownMenuItem<String>(
-                                  value: item.toString(),
-                                  child: Text("$item",
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize:
-                                              SizeConfig.blockSizeHorizontal! *
-                                                  2))))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          choosenKey = value;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }
-      },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -409,8 +296,14 @@ class _ProdukScreenState extends State<ProdukScreen> {
         ));
   }
 
-  Future<dynamic> dialogProduk({required BuildContext context, Produk? item}) {
-    var produkProvider = Provider.of<ProdukProvider>(context, listen: false);
+  dialogProduk({required BuildContext context, Produk? item}) {
+    if (item != null) {
+      kodeCtrl.text = item.kodeProduk!;
+      namaCtrl.text = item.namaProduk!;
+      kategoriCtrl.text = item.typeProduk!;
+      hargaGrosirCtrl.text = item.hargaGrosir!;
+      hargaUmumCtrl.text = item.hargaUmum!;
+    }
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -440,7 +333,8 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                   style: TextStyle(
                                       fontSize:
                                           SizeConfig.blockSizeHorizontal! * 2),
-                                  decoration: InputDecoration(hintText: ""),
+                                  decoration:
+                                      const InputDecoration(hintText: ""),
                                 ))
                           ],
                         ),
@@ -475,24 +369,18 @@ class _ProdukScreenState extends State<ProdukScreen> {
                                     vertical:
                                         SizeConfig.blockSizeVertical! * 2)),
                             onPressed: () {
-                              produkProvider.addProduk(
-                                  kodeCtrl.text,
-                                  namaCtrl.text,
-                                  kategoriCtrl.text,
-                                  hargaUmumCtrl.text,
-                                  hargaGrosirCtrl.text,
-                                  context);
-                              // setState(() {
-                              //   _items.add(Produk(
-                              //       kode: int.parse(kodeCtrl.text),
-                              //       nama: namaCtrl.text,
-                              //       kategori: kategoriCtrl.text,
-                              //       isSelected: false));
-                              //   dropdownitem =
-                              //       _generateDropdownKategori(_items);
-                              // });
-                              clearController();
-                              // Navigator.pop(context);
+                              Provider.of<ProdukProvider>(context,
+                                      listen: false)
+                                  .addProduk(
+                                      kodeCtrl.text,
+                                      namaCtrl.text,
+                                      kategoriCtrl.text,
+                                      hargaUmumCtrl.text,
+                                      hargaGrosirCtrl.text);
+
+                              Navigator.pop(context);
+                              Timer(const Duration(seconds: 1),
+                                  () => clearController());
                             },
                             child: Row(
                               children: const [
@@ -508,7 +396,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     IconButton(
                         padding: const EdgeInsets.all(0),
                         onPressed: () {
-                          scanBarcodeNormal();
+                          scanBarcodeNormal(context);
                         },
                         icon: const Icon(
                           Icons.document_scanner_outlined,
@@ -518,92 +406,35 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     const SizedBox(
                       width: 30,
                     ),
-                    // Column(children: [
-                    //   Container(
-                    //     height: 150,
-                    //     width: 150,
-                    //     decoration: BoxDecoration(
-                    //         image: const DecorationImage(
-                    //             image: AssetImage("assets/icon/profile.png")),
-                    //         border: Border.all()),
-                    //   ),
-                    //   const SizedBox(height: 10),
-                    //   ElevatedButton(
-                    //       style: ElevatedButton.styleFrom(
-                    //           padding: const EdgeInsets.symmetric(
-                    //               horizontal: 10, vertical: 10)),
-                    //       onPressed: () {},
-                    //       child: Row(
-                    //         children: const [
-                    //           Icon(Icons.cloud_upload_rounded),
-                    //           SizedBox(
-                    //             width: 20,
-                    //           ),
-                    //           Text("Upload Gambar ")
-                    //         ],
-                    //       ))
-                    // ])
                   ],
                 ),
               ),
             ));
   }
 
-  FutureBuilder<dynamic> dataTableTransaksi(BuildContext context) {
-    var produk = Provider.of<ProdukProvider>(context);
-    return FutureBuilder(
-      future: produk.getProduk(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (!snapshot.hasData) {
-          return SizedBox(
-            height: SizeConfig.screenHeight! * 0.55,
-            child: SingleChildScrollView(
-              child: DataTable(
-                showCheckboxColumn: false,
-                headingTextStyle: TextStyle(
-                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
-                    fontWeight: FontWeight.bold),
-                dataTextStyle: TextStyle(
-                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
-                    color: Colors.black),
-                headingRowColor: MaterialStateColor.resolveWith(
-                    (Set<MaterialState> states) =>
-                        Theme.of(context).primaryColor),
-                decoration: const BoxDecoration(color: Colors.white),
-                columns: _createColumns(),
-                rows: List<DataRow>.from(
-                    _items.map((item) => _createRow(item)).toList()),
-              ),
-            ),
-          );
-        } else {
-          // print(snapshot.data);
-          // var dataProduk = snapshot.data;
-          _items = snapshot.data;
-          _generateDropdownKategori(_items);
-          return SizedBox(
-            height: SizeConfig.screenHeight! * 0.65,
-            child: SingleChildScrollView(
-              child: DataTable(
-                showCheckboxColumn: false,
-                headingTextStyle: TextStyle(
-                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
-                    fontWeight: FontWeight.bold),
-                dataTextStyle: TextStyle(
-                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
-                    color: Colors.black),
-                headingRowColor: MaterialStateColor.resolveWith(
-                    (Set<MaterialState> states) =>
-                        Theme.of(context).primaryColor),
-                decoration: const BoxDecoration(color: Colors.white),
-                columns: _createColumns(),
-                rows: List<DataRow>.from(
-                    _items.map((item) => _createRow(item)).toList()),
-              ),
-            ),
-          );
-        }
-      },
+  Widget dataTableProduk(BuildContext context) {
+    return SizedBox(
+      height: SizeConfig.screenHeight! * 0.55,
+      child: SingleChildScrollView(
+        child: Consumer<ProdukProvider>(
+          builder: (BuildContext context, produkProvider, Widget? child) =>
+              DataTable(
+            showCheckboxColumn: false,
+            headingTextStyle: TextStyle(
+                fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                fontWeight: FontWeight.bold),
+            dataTextStyle: TextStyle(
+                fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                color: Colors.black),
+            headingRowColor: MaterialStateColor.resolveWith(
+                (Set<MaterialState> states) => Theme.of(context).primaryColor),
+            decoration: const BoxDecoration(color: Colors.white),
+            columns: _createColumns(),
+            rows: List<DataRow>.from(
+                produkProvider.produk.map((item) => _createRow(item)).toList()),
+          ),
+        ),
+      ),
     );
   }
 
@@ -703,7 +534,6 @@ class InputProduk extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FocusNode _focusNode = FocusNode();
     return Row(
       children: [
         SizedBox(
@@ -714,7 +544,6 @@ class InputProduk extends StatelessWidget {
         SizedBox(
             width: 300,
             child: TextFormField(
-              focusNode: _focusNode,
               controller: controller,
               style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2),
               decoration: InputDecoration(hintText: item ?? ""),

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/model/product_model.dart';
@@ -15,8 +14,6 @@ import 'package:kasir_online/widget/drawer_main.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 
-import '../model/item_model.dart';
-
 class TransaksiScreen extends StatefulWidget {
   const TransaksiScreen({super.key});
 
@@ -26,7 +23,6 @@ class TransaksiScreen extends StatefulWidget {
 
 class _TransaksiScreenState extends State<TransaksiScreen> {
   Size? size;
-  String _scanBarcode = "Unknows";
   Transaksi selected = Transaksi(
     namaProduk: " Tambah Produk",
   );
@@ -35,7 +31,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   bool isSelected = false;
   bool isSearch = false;
   double total = 0;
-  int kembali = 0;
   List<Transaksi> _items = [];
   FloatingActionButtonLocation? position =
       FloatingActionButtonLocation.endFloat;
@@ -45,10 +40,16 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      var providerProduk = Provider.of<ProdukProvider>(context, listen: false);
+      var providerTransaksi =
+          Provider.of<TransaksiProvider>(context, listen: false);
+      providerProduk.getProduk();
+      providerTransaksi.keranjang = [];
+      providerTransaksi.total = 0;
+      providerTransaksi.kembali = 0;
+    });
     handleScroll();
-    // setState(() {
-    //   _items = _generateItems();
-    // });
   }
 
   Future<void> scanBarcodeNormal(ProdukProvider produkProvider) async {
@@ -68,19 +69,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             isSelected: false,
           ));
           tambahTotal = tambahTotal + double.parse(value.hargaUmum!);
-
-          // _items.add(Transaksi(
-          //   id: 214324,
-          //   namaProduk: "value.namaProduk",
-          //   hargaProduk: 3423432,
-          //   jumlah: 1,
-          //   totalBayar: 324234,
-          //   isSelected: false,
-          // ));
-          // print("VALUEEEE >>>> ${value.namaProduk}");
-          // tambahTotal = tambahTotal + 345873489;
-          // print("tambahTotal >>>> $tambahTotal");
-          setState(() { 
+          setState(() {
             total = total + tambahTotal;
             _generateItems();
           });
@@ -118,14 +107,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     });
   }
 
-  kembaliFunc() {
-    if (tunaiCtrl.text == '') {
-      return 0;
-    } else {
-      return int.parse(tunaiCtrl.text) - total;
-    }
-  }
-
   void changePosition(FloatingActionButtonLocation values) {
     setState(() {
       position = values;
@@ -153,12 +134,12 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         duration: const Duration(seconds: 1), curve: Curves.fastOutSlowIn);
   }
 
-  void clear() {
+  void clear(TransaksiProvider provider) {
+    provider.total = 0;
+    provider.kembali = 0;
+    provider.keranjang = [];
     setState(() {
-      total = 0;
       tunaiCtrl.clear();
-      kembali = 0;
-      _items.clear();
       selected = Transaksi(
         namaProduk: " Tambah Produk",
       );
@@ -203,8 +184,13 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(flex: 1, child: dropdownHarga()),
-                          searchBar(context),
-                          Expanded(flex: 2, child: navbarMain(produkProvider))
+                          Visibility(
+                              visible: isSearch,
+                              child:
+                                  Expanded(flex: 2, child: searchBar(context))),
+                          Visibility(
+                              visible: !isSearch,
+                              child: Expanded(flex: 2, child: navbarMain()))
                         ],
                       ),
                       const SizedBox(
@@ -223,7 +209,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                               Total(
                                 title: "Grand Total",
                                 child: Text(
-                                  "Rp $total",
+                                  "Rp ${Provider.of<TransaksiProvider>(context).total}",
                                   style: TextStyle(
                                       fontSize:
                                           SizeConfig.safeBlockHorizontal! * 2,
@@ -257,7 +243,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                               Total(
                                   title: "Kembali",
                                   child: Text(
-                                    "Rp. ${kembaliFunc()}",
+                                    "Rp. ${transaksiProvider.kembaliFunc(tunaiCtrl.text)}",
                                     style: TextStyle(
                                         fontSize:
                                             SizeConfig.safeBlockHorizontal! * 2,
@@ -288,7 +274,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
           onPressed: () {
-            if (_items.isEmpty) {
+            if (transaksiProvider.keranjang.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
                 "Silahkan Pilih Produk",
@@ -296,8 +282,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                     fontSize: SizeConfig.safeBlockHorizontal! * 2,
                     fontWeight: FontWeight.bold),
               )));
-            }
-            if (tunaiCtrl.text == '') {
+            } else if (tunaiCtrl.text == '') {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
                 "Selesaikan Transaksi",
@@ -305,7 +290,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                     fontSize: SizeConfig.safeBlockHorizontal! * 2,
                     fontWeight: FontWeight.bold),
               )));
-            } else if (int.parse(tunaiCtrl.text) < total) {
+            } else if (int.parse(tunaiCtrl.text) < transaksiProvider.total) {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -326,8 +311,8 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                               onPressed: () {
                                 loading(context);
                                 Future.delayed(const Duration(seconds: 2), () {
-                                  clear();
-                                  Navigator.pop(context);
+                                  clear(Provider.of<TransaksiProvider>(context,
+                                      listen: false));
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(
@@ -345,22 +330,26 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                                 "Ya",
                                 style: TextStyle(
                                     fontSize:
-                                        SizeConfig.safeBlockHorizontal! * 2,
+                                        SizeConfig.safeBlockHorizontal! * 1.5,
                                     fontWeight: FontWeight.bold),
                               )),
                           ElevatedButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
-                              child: const Text("Tidak"))
+                              child: Text("Tidak",
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.safeBlockHorizontal! * 1.5,
+                                      fontWeight: FontWeight.bold)))
                         ],
                       ));
             } else {
-              transaksiProvider.addTransaksi(
-                  total.toString(), tunaiCtrl.text, kembali.toString());
+              transaksiProvider.addTransaksi(tunaiCtrl.text);
               loading(context);
               Future.delayed(const Duration(seconds: 2), () {
-                clear();
+                clear(Provider.of<TransaksiProvider>(context, listen: false));
+                Navigator.pop(context);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
@@ -440,7 +429,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   DataRow _createRow(Transaksi item) {
     return DataRow(
-      // index: item.id, // for DataRow.byIndex
       key: ValueKey(item.id),
       selected: item.isSelected!,
       onSelectChanged: (bool? isSelected) {
@@ -467,10 +455,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           children: [
             IconButton(
                 onPressed: () {
+                  Provider.of<TransaksiProvider>(context, listen: false)
+                      .totalBayar(item.hargaProduk!);
                   setState(() {
                     item.jumlah = item.jumlah! + 1;
                     item.totalBayar = item.totalBayar! + item.hargaProduk!;
-                    total = total + item.hargaProduk!;
                   });
                 },
                 icon: const Icon(Icons.add)),
@@ -481,10 +470,12 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             IconButton(
                 onPressed: () {
                   if (item.jumlah! <= 1) {
-                    setState(() {
-                      _items.removeWhere((element) => element.id == item.id);
-                      total = total - item.totalBayar!;
-                    });
+                    var provider =
+                        Provider.of<TransaksiProvider>(context, listen: false);
+
+                    provider.keranjang
+                        .removeWhere((element) => element.id == item.id);
+                    provider.kurangiTotalBayar(item.totalBayar!);
                   } else {
                     setState(() {
                       item.jumlah = item.jumlah! - 1;
@@ -518,167 +509,156 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: SingleChildScrollView(
-        child: DataTable(
-          showCheckboxColumn: false,
-          headingTextStyle: Theme.of(context)
-              .textTheme
-              .subtitle1!
-              .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-          headingRowColor: MaterialStateColor.resolveWith(
-              (Set<MaterialState> states) => Theme.of(context).primaryColor),
-          decoration: const BoxDecoration(color: Colors.white),
-          columns: _createColumns(),
-          rows: _items.map((item) => _createRow(item)).toList(),
+        child: Consumer<TransaksiProvider>(
+          builder: (BuildContext context, transaksiProvider, Widget? child) =>
+              DataTable(
+            showCheckboxColumn: false,
+            headingTextStyle: Theme.of(context)
+                .textTheme
+                .subtitle1!
+                .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+            headingRowColor: MaterialStateColor.resolveWith(
+                (Set<MaterialState> states) => Theme.of(context).primaryColor),
+            decoration: const BoxDecoration(color: Colors.white),
+            columns: _createColumns(),
+            rows: transaksiProvider.keranjang
+                .map((item) => _createRow(item))
+                .toList(),
+          ),
         ),
       ),
     );
   }
 
-  Visibility navbarMain(ProdukProvider produkProvider) {
-    return Visibility(
-      visible: !isSearch,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FutureBuilder(
-            future: produkProvider.getProduk(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                return Expanded(
-                  child: Card(
-                    color: Colors.white,
-                    child: DropdownSearch<Produk>(
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                        textAlignVertical: TextAlignVertical.center,
-                        dropdownSearchDecoration: InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                      ),
-                      popupProps: PopupProps.dialog(
-                          fit: FlexFit.loose,
-                          showSearchBox: true,
-                          searchFieldProps: TextFieldProps(
-                              style: TextStyle(
-                                  fontSize:
-                                      SizeConfig.safeBlockHorizontal! * 1.5)),
-                          itemBuilder: ((context, produk, isSelected) =>
-                              ListTile(
-                                title: Text(
-                                  produk.namaProduk!,
-                                  style: TextStyle(
-                                      fontSize:
-                                          SizeConfig.safeBlockHorizontal! *
-                                              1.5),
-                                ),
-                              ))),
-                      items: snapshot.data,
-                      onChanged: ((produk) {
-                        if (_items.any((element) => element.id == produk!.id)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Produk Sudah Ada")));
-                        } else {
-                          Transaksi data = Transaksi(
-                              id: produk!.id,
-                              namaProduk: produk.namaProduk,
-                              hargaProduk: double.parse(produk.hargaUmum!),
-                              jumlah: 1,
-                              totalBayar: double.parse(produk.hargaUmum!) * 1,
-                              isSelected: false);
-
-                          _items.add(data);
-                          setState(() {
-                            total = total + double.parse(produk.hargaUmum!);
-                            _generateItems();
-                          });
-
-                          print(_items);
-                        }
-                      }),
-                      dropdownBuilder: ((context, selectedItem) => Container(
-                            margin: EdgeInsets.only(
-                                left: SizeConfig.safeBlockHorizontal! * 2),
-                            child: Text(
-                              selectedItem?.namaProduk ?? 'Tambah Produk',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize:
-                                      SizeConfig.safeBlockHorizontal! * 1.5),
-                            ),
-                          )),
-                      // selectedItem: selected,
-                    ),
+  Widget navbarMain() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Consumer2<ProdukProvider, TransaksiProvider>(
+          builder: (BuildContext context, produkProvider, transaksiProvider,
+                  Widget? child) =>
+              Expanded(
+            child: Card(
+              color: Colors.white,
+              child: DropdownSearch<Produk>(
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  textAlignVertical: TextAlignVertical.center,
+                  dropdownSearchDecoration: InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
                   ),
-                );
-              }
+                ),
+                popupProps: PopupProps.dialog(
+                    fit: FlexFit.loose,
+                    showSearchBox: true,
+                    searchFieldProps: TextFieldProps(
+                        style: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5)),
+                    itemBuilder: ((context, produk, isSelected) => ListTile(
+                          title: Text(
+                            produk.namaProduk!,
+                            style: TextStyle(
+                                fontSize:
+                                    SizeConfig.safeBlockHorizontal! * 1.5),
+                          ),
+                        ))),
+                items: produkProvider.allProduk,
+                onChanged: ((produk) {
+                  if (transaksiProvider.keranjang
+                      .any((transaksi) => transaksi.id == produk!.id)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Produk Sudah Ada")));
+                  } else {
+                    transaksiProvider.addKeranjang(produk!);
+                    transaksiProvider
+                        .totalBayar(double.parse(produk.hargaUmum!));
+                    // setState(() {
+                    //   total = total + double.parse(produk.hargaUmum!);
+                    //   _generateItems();
+                    // });
+
+                    // print(_items);
+                  }
+                }),
+                dropdownBuilder: ((context, selectedItem) => Container(
+                      margin: EdgeInsets.only(
+                          left: SizeConfig.safeBlockHorizontal! * 2),
+                      child: Text(
+                        selectedItem?.namaProduk ?? 'Tambah Produk',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: SizeConfig.safeBlockHorizontal! * 1.5),
+                      ),
+                    )),
+                // selectedItem: selected,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ButtonNavbar(
+            title: "Scan Barang",
+            icon: Icons.document_scanner_outlined,
+            onPressed: () {
+              var provider =
+                  Provider.of<ProdukProvider>(context, listen: false);
+              scanBarcodeNormal(provider);
             },
           ),
-          Expanded(
-            child: ButtonNavbar(
-              title: "Scan Barang",
-              icon: Icons.document_scanner_outlined,
-              onPressed: () {
-                scanBarcodeNormal(produkProvider);
-              },
-            ),
+        ),
+        Expanded(
+          child: ButtonNavbar(
+            title: "Cari",
+            icon: Icons.search,
+            onPressed: () {
+              setState(() {
+                isSearch = true;
+              });
+            },
           ),
-          Expanded(
-            child: ButtonNavbar(
-              title: "Cari",
-              icon: Icons.search,
-              onPressed: () {
-                setState(() {
-                  isSearch = true;
-                });
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Visibility searchBar(BuildContext context) {
-    return Visibility(
-        visible: isSearch,
-        child: Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: SizedBox(
-                      child: TextFormField(
-                    decoration: const InputDecoration(
-                        border: InputBorder.none, hintText: "Silahkan Cari .."),
-                  )),
-                ),
-                Icon(
-                  Icons.search,
-                  color: Theme.of(context).primaryColor,
-                ),
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isSearch = false;
-                      });
-                    },
-                    icon: Icon(
-                      Icons.close,
-                      color: Theme.of(context).primaryColor,
-                    ))
-              ],
-            ),
+  Widget searchBar(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: SizeConfig.blockSizeHorizontal! * 2,
+      ),
+      padding: EdgeInsets.symmetric(
+          vertical: SizeConfig.blockSizeVertical! * 0.02, horizontal: 5),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+                child: TextFormField(
+              decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  hintText: "Silahkan Cari ..",
+                  hintStyle: TextStyle(
+                      fontSize: SizeConfig.blockSizeHorizontal! * 1.5)),
+            )),
           ),
-        ));
+          Icon(
+            Icons.search,
+            color: Theme.of(context).primaryColor,
+          ),
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  isSearch = false;
+                });
+              },
+              icon: Icon(
+                Icons.close,
+                color: Theme.of(context).primaryColor,
+              ))
+        ],
+      ),
+    );
   }
 
   Widget dropdownHarga() {

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:kasir_online/helper/layout.dart';
@@ -8,13 +6,14 @@ import 'package:kasir_online/screen/dataTransaksi_screen.dart';
 import 'package:kasir_online/screen/product_screen.dart';
 import 'package:kasir_online/screen/retur_penjualan_screen.dart';
 import 'package:kasir_online/screen/stok_screen.dart';
-import 'package:kasir_online/screen/transaction_screen.dart';
+import 'package:kasir_online/screen/transaksi_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
+import '../extention/datetime.dart';
 import '../widget/drawer_main.dart';
 
 class DashboarScreen extends StatefulWidget {
@@ -26,56 +25,15 @@ class DashboarScreen extends StatefulWidget {
 
 class _DashboarScreenState extends State<DashboarScreen>
     with TickerProviderStateMixin {
-  // bool isVisible = false;
   DateTime? today;
-  bool isAppbar = true;
   ScrollController scrollController = ScrollController();
   var namaCtrl = TextEditingController();
   var alamatCtrl = TextEditingController();
   var telpCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    handleScroll();
-  }
-
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
       today = day;
-    });
-  }
-
-  dateFormat(DateTime date) {
-    return DateFormat("dd-MM-yyyy").format(date);
-  }
-
-  dateToMonth(DateTime date) {
-    switch (date.month) {
-      case 1:
-        return "Januari";
-        break;
-      case 2:
-        return "Februari";
-      case 12:
-        return "Desember";
-      default:
-    }
-  }
-
-  void visibleAppbar(values) {
-    setState(() {
-      isAppbar = values;
-    });
-  }
-
-  void handleScroll() async {
-    scrollController.addListener(() {
-      if (scrollController.offset > 100) {
-        visibleAppbar(false);
-      } else if (scrollController.offset == 0) {
-        visibleAppbar(true);
-      }
     });
   }
 
@@ -87,7 +45,7 @@ class _DashboarScreenState extends State<DashboarScreen>
     SizeConfig().init(context);
 
     return Scaffold(
-      appBar: isAppbar ? appbarWidget(context: context) : null,
+      appBar: appbarWidget(context: context),
       drawer: const DrawerMain(),
       body: Stack(
         children: [

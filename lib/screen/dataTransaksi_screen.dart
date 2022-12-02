@@ -7,7 +7,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/model/transaksi_model.dart';
 import 'package:kasir_online/provider/transaksi_provider.dart';
-import 'package:kasir_online/screen/transaction_screen.dart';
+import 'package:kasir_online/screen/transaksi_screen.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
 import 'package:provider/provider.dart';
@@ -22,25 +22,12 @@ class DataTransaksiScreen extends StatefulWidget {
 }
 
 class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
-  List<Transaksi> _items = [];
-
   @override
   void initState() {
     super.initState();
-    _items = _generateTransaksi();
-  }
-
-  List<Transaksi> _generateTransaksi() {
-    return List.generate(_items.length, (int index) {
-      return Transaksi(
-          id: _items[index].id,
-          id_user: _items[index].id_user,
-          totalBayar: _items[index].totalBayar,
-          tunai: _items[index].totalBayar.toString(),
-          kembali: _items[index].kembali,
-          keterangan: "lunas",
-          isSelected: false,
-          createdAt: _items[index].createdAt);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      var provider = Provider.of<TransaksiProvider>(context, listen: false);
+      provider.getTransaksi();
     });
   }
 
@@ -52,56 +39,79 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
       appBar: appbarWidget(title: "Data Transaksi", context: context),
       drawer: DrawerMain(),
       body: Container(
-        margin: EdgeInsets.all(30),
-        child: ListView(children: [
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: EdgeInsets.only(bottom: 20),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: TextFormField(
-                    style: TextStyle(
-                        fontSize: SizeConfig.blockSizeHorizontal! * 2),
-                    decoration: InputDecoration(
-                        hintText: "Cari Disini",
-                        hintStyle: TextStyle(
-                            fontSize: SizeConfig.blockSizeHorizontal! * 2),
-                        border: InputBorder.none),
-                  )),
-                  IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.search,
-                        size: 30,
-                        color: Colors.red,
-                      ))
-                ],
-              ),
+          margin: EdgeInsets.all(30),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  margin: EdgeInsets.only(bottom: 20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: TextFormField(
+                          style: TextStyle(
+                              fontSize: SizeConfig.blockSizeHorizontal! * 2),
+                          decoration: InputDecoration(
+                              hintText: "Cari Disini",
+                              hintStyle: TextStyle(
+                                  fontSize:
+                                      SizeConfig.blockSizeHorizontal! * 2),
+                              border: InputBorder.none),
+                        )),
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.search,
+                              size: 30,
+                              color: Colors.red,
+                            ))
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Consumer<TransaksiProvider>(builder:
+                        (BuildContext context, provider, Widget? child) {
+                      print(provider.allTransaksi);
+                      return DataTable(
+                        showCheckboxColumn: false,
+                        headingTextStyle: TextStyle(
+                            fontSize: SizeConfig.blockSizeHorizontal! * 1.5,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                        headingRowColor: MaterialStateColor.resolveWith(
+                            (Set<MaterialState> states) =>
+                                Theme.of(context).primaryColor),
+                        decoration: const BoxDecoration(color: Colors.white),
+                        columns: _createColumns(),
+                        rows: provider.allTransaksi!
+                            .map((item) => _createRow(item))
+                            .toList(),
+                      );
+                    }),
+                  ),
+                ),
+                // dataTableTransaksi(context),
+              ],
             ),
-          ),
-          dataTableTransaksi(context, transaksiProvider),
-        ]),
-      ),
+          )),
     );
   }
 
   DataRow _createRow(Transaksi item) {
     return DataRow(
-      // index: item.id, // for DataRow.byIndex
       key: ValueKey(item.id),
       selected: item.isSelected!,
       onSelectChanged: (bool? isSelected) {
         if (isSelected != null) {
           item.isSelected = isSelected;
-
-          // setState(() {
-          //   data = item;
-          // });
-
           Timer(
               const Duration(milliseconds: 200),
               () => setState(() {
@@ -116,12 +126,12 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
       cells: [
         DataCell(
           Text(
-            item.createdAt!,
+            item.createdAt ?? "",
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2),
           ),
         ),
         DataCell(
-          Text(item.createdAt!,
+          Text(item.createdAt ?? "",
               style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
           placeholder: false,
           showEditIcon: true,
@@ -129,11 +139,11 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
             // dialogProduk(context: context, item: item);
           },
         ),
-        DataCell(Text(item.namaProduk!,
+        DataCell(Text(item.namaProduk ?? "",
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
         DataCell(Text(item.hargaProduk.toString(),
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
-        DataCell(Text('1',
+        DataCell(Text(item.jumlah.toString(),
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
         DataCell(Text(item.totalBayar.toString(),
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
@@ -193,58 +203,5 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
         tooltip: 'Kategori of the item',
       ),
     ];
-  }
-
-  Widget dataTableTransaksi(
-      BuildContext context, TransaksiProvider transaksiProvider) {
-    return FutureBuilder(
-      future: transaksiProvider.getTransaksi(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        print("snapshot.data Transaksi >> ${snapshot.data}");
-        if (!snapshot.hasData) {
-          return SizedBox(
-            height: SizeConfig.screenHeight! * 0.7,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                showCheckboxColumn: false,
-                headingTextStyle: Theme.of(context)
-                    .textTheme
-                    .subtitle1!
-                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                headingRowColor: MaterialStateColor.resolveWith(
-                    (Set<MaterialState> states) =>
-                        Theme.of(context).primaryColor),
-                decoration: const BoxDecoration(color: Colors.white),
-                columns: _createColumns(),
-                rows: _items.map((item) => _createRow(item)).toList(),
-              ),
-            ),
-          );
-        } else {
-          
-          _generateTransaksi();
-          return SizedBox(
-            height: SizeConfig.screenHeight! * 0.7,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                showCheckboxColumn: false,
-                headingTextStyle: Theme.of(context)
-                    .textTheme
-                    .subtitle1!
-                    .copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                headingRowColor: MaterialStateColor.resolveWith(
-                    (Set<MaterialState> states) =>
-                        Theme.of(context).primaryColor),
-                decoration: const BoxDecoration(color: Colors.white),
-                columns: _createColumns(),
-                rows: _items.map((item) => _createRow(item)).toList(),
-              ),
-            ),
-          );
-        }
-      },
-    );
   }
 }
