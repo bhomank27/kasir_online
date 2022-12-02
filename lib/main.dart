@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate, 
         ],
         supportedLocales: const [
           Locale('en', 'US'), // English, no country code

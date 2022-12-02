@@ -53,39 +53,44 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   Future<void> scanBarcodeNormal(ProdukProvider produkProvider) async {
     String barcodeScanRes;
-    List<Transaksi> data = [];
+    double tambahTotal = 0;
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
-      print(barcodeScanRes);
       if (barcodeScanRes != '-1') {
-        produkProvider.getProdukByBarcode(barcodeScanRes).then((value) =>
-            _items.add(Transaksi(
-                id: value.id,
-                namaProduk: value.namaProduk,
-                hargaProduk: double.parse(value.hargaUmum!),
-                jumlah: 1,
-                totalBayar: double.parse(value.hargaUmum!),
-                isSelected: false)));
-        // data.add(Item(
-        //     id: int.parse(barcodeScanRes),
-        //     name: "Item Tet",
-        //     total: 1,
-        //     price: 1000,
-        //     totalPrice: 2000,
-        //     isSelected: false));
+        produkProvider.getProdukByBarcode(barcodeScanRes).then((value) {
+          _items.add(Transaksi(
+            id: value.id,
+            namaProduk: value.namaProduk,
+            hargaProduk: double.parse(value.hargaUmum!),
+            jumlah: 1,
+            totalBayar: double.parse(value.hargaUmum!),
+            isSelected: false,
+          ));
+          tambahTotal = tambahTotal + double.parse(value.hargaUmum!);
+
+          // _items.add(Transaksi(
+          //   id: 214324,
+          //   namaProduk: "value.namaProduk",
+          //   hargaProduk: 3423432,
+          //   jumlah: 1,
+          //   totalBayar: 324234,
+          //   isSelected: false,
+          // ));
+          // print("VALUEEEE >>>> ${value.namaProduk}");
+          // tambahTotal = tambahTotal + 345873489;
+          // print("tambahTotal >>>> $tambahTotal");
+          setState(() { 
+            total = total + tambahTotal;
+            _generateItems();
+          });
+        });
       }
-      print(data);
-      // player.play('beep.mp3');
-    } on PlatformException {
-      barcodeScanRes = 'Failed to get platform version.';
+    } catch (e) {
+      print("gagal deteksi");
     }
 
     if (!mounted) return;
-
-    setState(() {
-      _items += data;
-    });
   }
 
   Future<void> startBarcodeScanStream() async {
@@ -573,7 +578,6 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                               ))),
                       items: snapshot.data,
                       onChanged: ((produk) {
-                        print(produk);
                         if (_items.any((element) => element.id == produk!.id)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
