@@ -52,27 +52,28 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     handleScroll();
   }
 
-  Future<void> scanBarcodeNormal(ProdukProvider produkProvider) async {
+  Future<void> scanBarcodeNormal(ProdukProvider produkProvider, context) async {
     String barcodeScanRes;
     double tambahTotal = 0;
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       if (barcodeScanRes != '-1') {
-        produkProvider.getProdukByBarcode(barcodeScanRes).then((value) {
-          _items.add(Transaksi(
-            id: value.id,
-            namaProduk: value.namaProduk,
-            hargaProduk: double.parse(value.hargaUmum!),
-            jumlah: 1,
-            totalBayar: double.parse(value.hargaUmum!),
-            isSelected: false,
-          ));
-          tambahTotal = tambahTotal + double.parse(value.hargaUmum!);
-          setState(() {
-            total = total + tambahTotal;
-            _generateItems();
-          });
+        print("wahwhah");
+        produkProvider.getProdukByBarcode(barcodeScanRes).then((produk) {
+          print(produk.id);
+          if (produk.id != null) {
+            Provider.of<TransaksiProvider>(context, listen: false)
+                .addKeranjang(produk);
+            Provider.of<TransaksiProvider>(context, listen: false)
+                .totalBayar(double.parse(produk.hargaUmum!));
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Berhasil di Tambahkan")));
+          } else {
+            print("wkwkwkwkwkwk");
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Produk belum di Tambahkan")));
+          }
         });
       }
     } catch (e) {
@@ -602,7 +603,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
             onPressed: () {
               var provider =
                   Provider.of<ProdukProvider>(context, listen: false);
-              scanBarcodeNormal(provider);
+              scanBarcodeNormal(provider, context);
             },
           ),
         ),

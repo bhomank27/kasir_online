@@ -65,15 +65,15 @@ class ProdukProvider extends ChangeNotifier {
   Future<Produk> getProdukByBarcode(barcode) async {
     var token = await storage.read('token');
     var url = Uri.parse('$baseUrl/produk');
-    Produk? produk;
+    Produk produk = Produk();
     var response =
         await http.get(url, headers: {"Authorization": "Bearer $token"});
 
     if (response.statusCode == 200) {
+      print('kesini');
       List data = json.decode(response.body)['data'];
       for (var i in data) {
         if (barcode == i['kode']) {
-          print(i);
           produk = Produk(
             id: i['id'],
             namaProduk: i['nama'],
@@ -82,8 +82,10 @@ class ProdukProvider extends ChangeNotifier {
           );
         }
       }
-      return produk!;
+      print(produk);
+      return produk;
+    } else {
+      return Produk();
     }
-    return Produk();
   }
 }
