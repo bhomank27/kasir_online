@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:kasir_online/helper/layout.dart';
+import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
+import 'package:provider/provider.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -11,6 +13,7 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
     return Scaffold(
       appBar: appbarWidget(title: "Pengaturan", context: context),
       drawer: const DrawerMain(),
@@ -57,8 +60,7 @@ class SettingScreen extends StatelessWidget {
                         actions: [
                           ElevatedButton(
                               onPressed: () {
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context, '/', (route) => false);
+                                userProvider.logout(context);
                               },
                               child: Text(
                                 "Ya",

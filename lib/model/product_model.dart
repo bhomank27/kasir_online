@@ -27,9 +27,9 @@ class Produk {
   Produk.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     idProduk = json['id_produk'];
-    kodeProduk = json['kode_produk'];
-    namaProduk = json['nama_produk'];
-    typeProduk = json['type_produk'];
+    kodeProduk = json['kode'];
+    namaProduk = json['nama'];
+    typeProduk = json['type'];
     hargaUmum = json['harga_umum'];
     hargaGrosir = json['harga_grosir'];
     createdAt = json['created_at'];

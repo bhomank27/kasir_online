@@ -59,9 +59,14 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       if (barcodeScanRes != '-1') {
-        produkProvider
-            .getProdukById(barcodeScanRes)
-            .then((value) => print(value));
+        produkProvider.getProdukByBarcode(barcodeScanRes).then((value) =>
+            _items.add(Transaksi(
+                id: value.id,
+                namaProduk: value.namaProduk,
+                hargaProduk: double.parse(value.hargaUmum!),
+                jumlah: 1,
+                totalBayar: double.parse(value.hargaUmum!),
+                isSelected: false)));
         // data.add(Item(
         //     id: int.parse(barcodeScanRes),
         //     name: "Item Tet",
@@ -112,7 +117,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
     if (tunaiCtrl.text == '') {
       return 0;
     } else {
-      return total - int.parse(tunaiCtrl.text);
+      return int.parse(tunaiCtrl.text) - total;
     }
   }
 
@@ -279,12 +284,22 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
           style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(15)),
           onPressed: () {
             if (_items.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Silahkan Pilih Produk")));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                "Silahkan Pilih Produk",
+                style: TextStyle(
+                    fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                    fontWeight: FontWeight.bold),
+              )));
             }
             if (tunaiCtrl.text == '') {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Selesaikan Transaksi")));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                "Selesaikan Transaksi",
+                style: TextStyle(
+                    fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                    fontWeight: FontWeight.bold),
+              )));
             } else if (int.parse(tunaiCtrl.text) < total) {
               showDialog(
                   context: context,
@@ -337,13 +352,18 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                       ));
             } else {
               transaksiProvider.addTransaksi(
-                  total.toString(), kembali.toString(), tunaiCtrl.text);
+                  total.toString(), tunaiCtrl.text, kembali.toString());
               loading(context);
-              Timer(const Duration(seconds: 2), () {
+              Future.delayed(const Duration(seconds: 2), () {
                 clear();
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Transaksi Berhasil")));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                  "Transaksi Berhasil",
+                  style: TextStyle(
+                      fontSize: SizeConfig.safeBlockHorizontal! * 2,
+                      fontWeight: FontWeight.bold),
+                )));
                 scrollTop();
               });
             }
@@ -445,7 +465,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                   setState(() {
                     item.jumlah = item.jumlah! + 1;
                     item.totalBayar = item.totalBayar! + item.hargaProduk!;
-                    total = total + item.totalBayar!;
+                    total = total + item.hargaProduk!;
                   });
                 },
                 icon: const Icon(Icons.add)),
@@ -699,6 +719,12 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    tunaiCtrl.dispose();
+    super.dispose();
   }
 }
 

@@ -7,6 +7,7 @@ import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
 import 'package:kasir_online/screen/sigin_screen.dart';
 import 'package:kasir_online/screen/signup_screen.dart';
+import 'package:kasir_online/screen/splashscreen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:sizer/sizer.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +52,7 @@ class MyApp extends StatelessWidget {
         theme: theme,
         initialRoute: "/",
         routes: {
-          "/": (context) => const SignUpScreen(),
+          "/": (context) => const SplashScreen(),
           "/signIn": (context) => const SignInScreen(),
           "/dashboard": (context) => const DashboarScreen(),
         },
