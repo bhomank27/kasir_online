@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/model/transaksi_model.dart';
 import 'package:kasir_online/provider/transaksi_provider.dart';
+import 'package:kasir_online/screen/transaction_screen.dart';
 import 'package:kasir_online/widget/appbar_main.dart';
 import 'package:kasir_online/widget/drawer_main.dart';
 import 'package:provider/provider.dart';
@@ -127,7 +129,7 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
             // dialogProduk(context: context, item: item);
           },
         ),
-        DataCell(Text(item.namaProduk.toString(),
+        DataCell(Text(item.namaProduk!,
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
         DataCell(Text(item.hargaProduk.toString(),
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2))),
@@ -152,7 +154,7 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
       DataColumn(
         label: Text('Tanggal',
             style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
-        numeric: true,
+        numeric: false,
       ),
       DataColumn(
         label: Text('Pukul',
@@ -203,6 +205,7 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
           return SizedBox(
             height: SizeConfig.screenHeight! * 0.7,
             child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: DataTable(
                 showCheckboxColumn: false,
                 headingTextStyle: Theme.of(context)
@@ -219,12 +222,12 @@ class _DataTransaksiScreenState extends State<DataTransaksiScreen> {
             ),
           );
         } else {
-          List data = snapshot.data;
-          _items = data.map((e) => Transaksi.fromJson(e)).toList();
+          
           _generateTransaksi();
           return SizedBox(
             height: SizeConfig.screenHeight! * 0.7,
             child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: DataTable(
                 showCheckboxColumn: false,
                 headingTextStyle: Theme.of(context)

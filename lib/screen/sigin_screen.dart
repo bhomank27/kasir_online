@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kasir_online/helper/layout.dart';
 import 'package:kasir_online/provider/user_provider.dart';
 import 'package:kasir_online/screen/dashboard_screen.dart';
+import 'package:kasir_online/screen/signup_screen.dart';
 import 'package:kasir_online/theme/theme.dart';
 import 'package:provider/provider.dart';
 
@@ -137,8 +138,11 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           TextButton(
                               onPressed: () {
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context, '/', (route) => false);
+                                Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SignUpScreen()),
+                                    (route) => false);
                               },
                               child: Text(
                                 "Daftar disini",

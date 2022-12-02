@@ -36,8 +36,8 @@ class TransaksiProvider extends ChangeNotifier {
     });
     if (response.statusCode == 200) {
       List data = json.decode(response.body)['data']['data'];
-      // List<Transaksi> transaksi =
-      //     data.map((e) => Transaksi.fromJson(e)).toList();
+      List<Transaksi> transaksi =
+          data.map((e) => Transaksi.fromJson(e)).toList();
 
       return data;
     }

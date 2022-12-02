@@ -47,21 +47,31 @@ class _ProdukScreenState extends State<ProdukScreen> {
     });
   }
 
+  clearController() {
+    setState(() {
+      kodeCtrl.clear();
+      namaCtrl.clear();
+      kategoriCtrl.clear();
+      hargaUmumCtrl.clear();
+      hargaGrosirCtrl.clear();
+    });
+  }
+
   Future<void> scanBarcodeNormal() async {
-    String barcodeScanRes;
+    String? barcodeScanRes;
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       // player.play('beep.mp3');
-    } on PlatformException {
-      barcodeScanRes = 'Failed to get platform version.';
+    } catch (e) {
+      print(e);
     }
 
     if (!mounted) return;
 
     setState(() {
-      _scanBarcode = barcodeScanRes;
+      kodeCtrl.text = barcodeScanRes ?? "tidak terdeteksi";
     });
   }
 
@@ -84,122 +94,125 @@ class _ProdukScreenState extends State<ProdukScreen> {
       drawer: const DrawerMain(),
       body: Builder(
         builder: (BuildContext context) {
-          return Stack(
-            children: [
-              Container(
-                margin: EdgeInsets.all(SizeConfig.blockSizeHorizontal! * 1.5),
-                child: Row(
-                  children: [
-                    // data table
-                    Expanded(
-                        flex: 2,
-                        child: Container(
-                          margin: EdgeInsets.only(
-                              right: SizeConfig.blockSizeHorizontal! * 1),
-                          padding: EdgeInsets.all(
-                              SizeConfig.blockSizeHorizontal! * 1),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
+          return SingleChildScrollView(
+            child: Stack(
+              children: [
+                Container(
+                  margin: EdgeInsets.all(SizeConfig.blockSizeHorizontal! * 1.5),
+                  child: Row(
+                    children: [
+                      // data table
+                      Expanded(
+                          flex: 2,
+                          child: Container(
+                            margin: EdgeInsets.only(
+                                right: SizeConfig.blockSizeHorizontal! * 1),
+                            padding: EdgeInsets.all(
                                 SizeConfig.blockSizeHorizontal! * 1),
-                            color: Colors.white,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(
-                                    bottom:
-                                        SizeConfig.blockSizeHorizontal! * 1),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Expanded(
-                                        child:
-                                            dropdownkatakunci(produkProvider)),
-                                    Expanded(child: totalItem(produkProvider)),
-                                  ],
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  SizeConfig.blockSizeHorizontal! * 1),
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(
+                                      bottom:
+                                          SizeConfig.blockSizeHorizontal! * 1),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Expanded(
+                                          child: dropdownkatakunci(
+                                              produkProvider)),
+                                      Expanded(
+                                          child: totalItem(produkProvider)),
+                                    ],
+                                  ),
                                 ),
+
+                                //data table produk
+                                dataTableTransaksi(context),
+                              ],
+                            ),
+                          )),
+
+                      //preview item
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          children: [
+                            buttonAddProduct(context),
+                            const SizedBox(height: 15),
+                            Container(
+                              padding: const EdgeInsets.all(15),
+                              color: Colors.red,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        height:
+                                            SizeConfig.blockSizeHorizontal! * 8,
+                                        width:
+                                            SizeConfig.blockSizeHorizontal! * 8,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            image: const DecorationImage(
+                                                image: AssetImage(
+                                                    "assets/icon/profile/toko.png"))),
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            SizeConfig.blockSizeHorizontal! * 2,
+                                      ),
+                                      Flexible(
+                                        child: Text(data!.namaProduk!,
+                                            style: TextStyle(
+                                                fontSize: SizeConfig
+                                                        .blockSizeHorizontal! *
+                                                    2,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                      ),
+                                    ],
+                                  )
+                                ],
                               ),
-
-                              //data table produk
-                              dataTableTransaksi(context),
-                            ],
-                          ),
-                        )),
-
-                    //preview item
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        children: [
-                          buttonAddProduct(context),
-                          const SizedBox(height: 15),
-                          Container(
-                            padding: const EdgeInsets.all(15),
-                            color: Colors.red,
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      height:
-                                          SizeConfig.blockSizeHorizontal! * 8,
-                                      width:
-                                          SizeConfig.blockSizeHorizontal! * 8,
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          image: const DecorationImage(
-                                              image: AssetImage(
-                                                  "assets/icon/profile/toko.png"))),
-                                    ),
-                                    SizedBox(
-                                      width:
-                                          SizeConfig.blockSizeHorizontal! * 2,
-                                    ),
-                                    Flexible(
-                                      child: Text(data!.namaProduk!,
-                                          style: TextStyle(
-                                              fontSize: SizeConfig
-                                                      .blockSizeHorizontal! *
-                                                  2,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white)),
-                                    ),
-                                  ],
-                                )
-                              ],
                             ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal:
-                                    SizeConfig.blockSizeHorizontal! * 2),
-                            decoration: const BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(15),
-                                    bottomRight: Radius.circular(15))),
-                            child: Column(
-                              children: [
-                                HargaItem(
-                                    title: "Harga Jual Umum",
-                                    harga: data?.hargaUmum ?? "0"),
-                                HargaItem(
-                                    title: "Harga Jual Grosir",
-                                    harga: data?.hargaGrosir ?? "0"),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal:
+                                      SizeConfig.blockSizeHorizontal! * 2),
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(15),
+                                      bottomRight: Radius.circular(15))),
+                              child: Column(
+                                children: [
+                                  HargaItem(
+                                      title: "Harga Jual Umum",
+                                      harga: data?.hargaUmum ?? "0"),
+                                  HargaItem(
+                                      title: "Harga Jual Grosir",
+                                      harga: data?.hargaGrosir ?? "0"),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -411,10 +424,25 @@ class _ProdukScreenState extends State<ProdukScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        InputProduk(
-                          title: "Kode Barang",
-                          controller: kodeCtrl,
-                          item: item?.kodeProduk.toString() ?? '',
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 200,
+                              child: Text("Kode Barang",
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.blockSizeHorizontal! * 2)),
+                            ),
+                            SizedBox(
+                                width: 300,
+                                child: TextFormField(
+                                  controller: kodeCtrl,
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeConfig.blockSizeHorizontal! * 2),
+                                  decoration: InputDecoration(hintText: ""),
+                                ))
+                          ],
                         ),
                         InputProduk(
                           title: "Nama Barang",
@@ -463,9 +491,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
                               //   dropdownitem =
                               //       _generateDropdownKategori(_items);
                               // });
-                              // kodeCtrl.clear();
-                              // namaCtrl.clear();
-                              // kategoriCtrl.clear();
+                              clearController();
                               // Navigator.pop(context);
                             },
                             child: Row(
