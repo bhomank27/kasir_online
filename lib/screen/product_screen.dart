@@ -211,9 +211,25 @@ class _ProdukScreenState extends State<ProdukScreen> {
       future: produkProvider.getProduk(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-              // child: CircularProgressIndicator(),
-              );
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text("Total Item : ",
+                  style:
+                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.grey, width: 2)),
+                child: Text('0',
+                    style: TextStyle(
+                        fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+              )
+            ],
+          );
         } else {
           return Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -244,9 +260,54 @@ class _ProdukScreenState extends State<ProdukScreen> {
       future: produkProvider.getProduk(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-              // child: CircularProgressIndicator(),
-              );
+          return Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Kata Kunci : ",
+                  style:
+                      TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+              Expanded(
+                child: Container(
+                  // width: SizeConfig.screenWidth! * 0.1,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey, width: 2)),
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      hint: FittedBox(
+                        child: Text("Nama Produk",
+                            style: TextStyle(
+                                fontSize: SizeConfig.blockSizeHorizontal! * 2)),
+                      ),
+                      isExpanded: true,
+                      value: choosenKey,
+                      style: const TextStyle(color: Colors.white),
+                      iconEnabledColor: Colors.black,
+                      borderRadius: BorderRadius.circular(10),
+                      items: ["Belum ada Produk"]
+                          .map<DropdownMenuItem<String>>((item) =>
+                              DropdownMenuItem<String>(
+                                  value: item.toString(),
+                                  child: Text("$item",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize:
+                                              SizeConfig.blockSizeHorizontal! *
+                                                  2))))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          choosenKey = value;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
         } else {
           List<Produk> data = snapshot.data;
           List dataDropDown = [];
@@ -468,8 +529,26 @@ class _ProdukScreenState extends State<ProdukScreen> {
       future: produk.getProduk(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return SizedBox(
+            height: SizeConfig.screenHeight! * 0.55,
+            child: SingleChildScrollView(
+              child: DataTable(
+                showCheckboxColumn: false,
+                headingTextStyle: TextStyle(
+                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                    fontWeight: FontWeight.bold),
+                dataTextStyle: TextStyle(
+                    fontSize: SizeConfig.blockSizeHorizontal! * 2,
+                    color: Colors.black),
+                headingRowColor: MaterialStateColor.resolveWith(
+                    (Set<MaterialState> states) =>
+                        Theme.of(context).primaryColor),
+                decoration: const BoxDecoration(color: Colors.white),
+                columns: _createColumns(),
+                rows: List<DataRow>.from(
+                    _items.map((item) => _createRow(item)).toList()),
+              ),
+            ),
           );
         } else {
           // print(snapshot.data);
@@ -477,7 +556,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
           _items = snapshot.data;
           _generateDropdownKategori(_items);
           return SizedBox(
-            // height: SizeConfig.screenHeight! * 0.7,
+            height: SizeConfig.screenHeight! * 0.65,
             child: SingleChildScrollView(
               child: DataTable(
                 showCheckboxColumn: false,
@@ -504,19 +583,26 @@ class _ProdukScreenState extends State<ProdukScreen> {
 
   List<DataColumn> _createColumns() {
     return [
-      const DataColumn(
+      DataColumn(
         label: Text(
           'Kode',
+          style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
         ),
         numeric: false,
       ),
-      const DataColumn(
-        label: Text('Nama Barang'),
+      DataColumn(
+        label: Text(
+          'Nama Barang',
+          style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
+        ),
         numeric: false,
         tooltip: 'Name of the item',
       ),
-      const DataColumn(
-        label: Text('Kategori'),
+      DataColumn(
+        label: Text(
+          'Kategori',
+          style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
+        ),
         numeric: false,
         tooltip: 'Kategori of the item',
       ),
@@ -551,11 +637,13 @@ class _ProdukScreenState extends State<ProdukScreen> {
         DataCell(
           Text(
             item.kodeProduk!,
+            style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
           ),
         ),
         DataCell(
           Text(
             item.namaProduk!,
+            style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
           ),
           placeholder: false,
           showEditIcon: true,
@@ -565,6 +653,7 @@ class _ProdukScreenState extends State<ProdukScreen> {
         ),
         DataCell(Text(
           item.typeProduk!,
+          style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 1.7),
         )),
       ],
     );
@@ -588,6 +677,7 @@ class InputProduk extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    FocusNode _focusNode = FocusNode();
     return Row(
       children: [
         SizedBox(
@@ -598,6 +688,7 @@ class InputProduk extends StatelessWidget {
         SizedBox(
             width: 300,
             child: TextFormField(
+              focusNode: _focusNode,
               controller: controller,
               style: TextStyle(fontSize: SizeConfig.blockSizeHorizontal! * 2),
               decoration: InputDecoration(hintText: item ?? ""),

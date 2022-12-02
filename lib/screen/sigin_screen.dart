@@ -107,18 +107,21 @@ class _SignInScreenState extends State<SignInScreen> {
                                           "Silahkan Isi Password 8+ Karakter"),
                                 ),
                               ),
-                              IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isObsecure = !isObsecure;
-                                    });
-                                  },
-                                  icon: Icon(
-                                      isObsecure
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                      size:
-                                          SizeConfig.safeBlockHorizontal! * 2))
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    isObsecure = !isObsecure;
+                                  });
+                                },
+                                child: Icon(
+                                    isObsecure
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    size: SizeConfig.safeBlockHorizontal! * 2),
+                              ),
+                              SizedBox(
+                                width: SizeConfig.screenWidth! * 0.015,
+                              ),
                             ],
                           )
                         ],

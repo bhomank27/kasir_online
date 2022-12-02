@@ -150,18 +150,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       )),
                                 ),
                               ),
-                              IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isObsecure = !isObsecure;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    isObsecure
-                                        ? Icons.visibility
-                                        : Icons.visibility_off,
-                                    size: SizeConfig.safeBlockHorizontal! * 2,
-                                  ))
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    isObsecure = !isObsecure;
+                                  });
+                                },
+                                child: Icon(
+                                  isObsecure
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  size: SizeConfig.safeBlockHorizontal! * 2,
+                                ),
+                              ),
+                              SizedBox(
+                                width: SizeConfig.screenWidth! * 0.015,
+                              ),
                             ],
                           ),
                           InputSignup(
@@ -193,18 +197,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       )),
                                 ),
                               ),
-                              IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isObsecure2 = !isObsecure2;
-                                    });
-                                  },
-                                  icon: Icon(
-                                      isObsecure2
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                      size:
-                                          SizeConfig.safeBlockHorizontal! * 2))
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    isObsecure2 = !isObsecure2;
+                                  });
+                                },
+                                child: Icon(
+                                    isObsecure2
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    size: SizeConfig.safeBlockHorizontal! * 2),
+                              ),
+                              SizedBox(
+                                width: SizeConfig.screenWidth! * 0.015,
+                              ),
                             ],
                           )
                         ],

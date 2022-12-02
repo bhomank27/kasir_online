@@ -1,5 +1,6 @@
 class Transaksi {
   int? id;
+  String? id_user;
   double? totalBayar;
   String? tunai;
   String? kembali;
@@ -9,10 +10,12 @@ class Transaksi {
   String? namaProduk;
   int? jumlah;
   double? hargaProduk;
+  String? keterangan;
   bool? isSelected;
 
   Transaksi(
       {this.id,
+      this.id_user,
       this.totalBayar,
       this.tunai,
       this.kembali,
@@ -22,10 +25,12 @@ class Transaksi {
       this.namaProduk,
       this.jumlah,
       this.hargaProduk,
+      this.keterangan,
       this.isSelected});
 
   Transaksi.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    id_user = json['id_user'];
     totalBayar = json['total_bayar'];
     tunai = json['tunai'];
     kembali = json['kembali'];
